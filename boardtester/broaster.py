@@ -2,6 +2,7 @@
 
 usage:
     python broaster.py --iterations 10 --description "short test"
+    python broaster.py --process "short test"
 
 Uses phidgeter to control a relay placing the device in a known power
 state. Performs checks of device functionality and stores for later
@@ -14,6 +15,7 @@ comparison. Later plans include converting this to log file intercept
 using testfixtures.LogCapture
 """
 
+import os
 import sys    
 import time
 import argparse
@@ -25,7 +27,65 @@ from wasatchusb import camera
 from wasatchusb.utils import FindDevices
 from phidgeter import relay
 
+class ProcessBroaster(object):
+    """ Look through the existing exam results, and create statistics
+    about pass and failure rates.
+    """
+    def __init__(self, exam_root="exam_results"):
+        print "Start process broaster"
+        self._exam_root = exam_root
+
+    def find_log(self, description):
+        """ Look through each exam log entry, and return the full exam
+        log if the description is found in the file.
+        """
+
+
+        # Check for root directory
+        if not os.path.exists(self._exam_root):
+            print "Exam root: %s does not exist"
+            return False
+
+        # For each sub directory in the root, walk through all
+        # directories, and look for the description text in the system
+        # info file
+
+        list_of_files = {}
+        for (dirpath, dirnames, filenames) in os.walk(self._exam_root):
+            for dirname in dirnames:
+                full_path = "%s/%s" % (dirpath, dirname)
+                if self.check_each_sub(full_path, description):
+                    print "Found description in %s" % full_path
+                    return True
+
+        return False
+   
+    def check_each_sub(self, full_path, description):
+        """ Look at the exam info file in the specified directory,
+        return true if the description text is present.
+        """
+        for (dirpath, dirnames, filenames) in os.walk(full_path):
+            for dirname in dirnames:
+
+                sysname = "%s/%s/" % (full_path, dirname)
+                sysname += "%s_system_info.txt" % dirname
+                print "Open %s" % sysname
+                sysfile = open(sysname)
+                for line in sysfile.readlines():
+                    #print "line is: %s" % line
+                    if description in line:
+                        return True
+                sysfile.close()
+
+        print "Description %s not found" % description
+        return False
+
+
+
 class WasatchBroaster_Exam(object):
+    """ Power cycle devices, store results in automatically created log
+    files.
+    """
     
     def __init__(self, exam_name):
         print "exam name is [%s]" % exam_name

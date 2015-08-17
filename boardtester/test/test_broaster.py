@@ -15,6 +15,8 @@ make sure the device is accessible.
 import unittest
 import sys
 
+from boardtester import broaster
+
 class Test(unittest.TestCase):
 
     def setUp(self):
@@ -24,15 +26,14 @@ class Test(unittest.TestCase):
         self.usage_str += "Where N is a number 0-10000\n"
         self.usage_str += "And text is phrase in quotes\n"
 
-        from boardtester import broaster
-        self.exam_iter = 1
-        self.exam_desc = "run broaster test"
-        self.sae = broaster.WasatchBroaster_Exam(self.exam_desc)
     
     def test_run_broaster(self):
         # First check the utils can be used to print the important
         # colored ascii logo
-        from boardtester import broaster
+        self.exam_iter = 1
+        self.exam_desc = "run broaster test"
+        self.sae = broaster.WasatchBroaster_Exam(self.exam_desc)
+
         butil = broaster.BroasterUtils()
         result = butil.colorama_broaster()
         # Look for the bottom of the ROASTER chars
@@ -41,6 +42,12 @@ class Test(unittest.TestCase):
         self.sae.run(self.exam_iter)
 
     def test_force_exceptions(self):
+
+        self.exam_iter = 1
+        self.exam_desc = "force exceptions test"
+
+        # Setup the exam, but do not run it
+        self.sae = broaster.WasatchBroaster_Exam(self.exam_desc)
 
         # Check if the fail string is in the exception caught return
         # string
@@ -53,9 +60,17 @@ class Test(unittest.TestCase):
          
         result = self.sae.lines_info(1)
         self.assertTrue("Error lines info" in result)
-         
-              
+    
+    def test_process_results(self):
+        self.proc = broaster.ProcessBroaster()
 
+        exam_description = "unfindable"
+        result = self.proc.find_log(exam_description) 
+        self.assertFalse(result) 
+
+        # Now copy over a known exam result file, and make sure it can
+        # be found
+        
  
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,9 @@
+Exam started on odroid at local time: 1439759749.63
+Exam description: actual test
+System summary: Linux
+odroid
+3.10.72-76
+#1 SMP PREEMPT Thu Mar 19 16:40:31 BRT 2015
+armv7l
+armv7l
+f7e43896-445b-11e5-adc0-001e06100bf7
