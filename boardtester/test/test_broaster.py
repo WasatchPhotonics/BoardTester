@@ -14,6 +14,8 @@ make sure the device is accessible.
 
 import unittest
 import sys
+import os
+import shutil
 
 from boardtester import broaster
 
@@ -62,15 +64,38 @@ class Test(unittest.TestCase):
         self.assertTrue("Error lines info" in result)
     
     def test_process_results(self):
-        self.proc = broaster.ProcessBroaster()
+
+        # Clean any old directories
+        node_root = "exam_results/test_example_node"
+        if os.path.exists(node_root):
+            shutil.rmtree(node_root)
+        result = os.path.exists(node_root)
+        self.assertFalse(result)
 
         exam_description = "unfindable"
+        self.proc = broaster.ProcessBroaster()
         result = self.proc.find_log(exam_description) 
         self.assertFalse(result) 
 
         # Now copy over a known exam result file, and make sure it can
         # be found
         
- 
+
+        new_path = "%s/9/" % node_root
+        os.makedirs(new_path)
+        result = os.path.exists(new_path)
+        self.assertTrue(result)
+
+        kd = "boardtester/test/known_results/9/9_system_info.txt"
+        dst_file = "%s/9_system_info.txt" % new_path
+        shutil.copyfile(kd, dst_file)
+        result = os.path.exists(dst_file)
+        self.assertTrue(result)
+
+        exam_description = "actual test"
+        result = self.proc.find_log(exam_description) 
+        self.assertTrue(result) 
+
+
 if __name__ == "__main__":
     unittest.main()
