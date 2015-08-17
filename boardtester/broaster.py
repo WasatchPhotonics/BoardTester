@@ -32,7 +32,7 @@ class ProcessBroaster(object):
     about pass and failure rates.
     """
     def __init__(self, exam_root="exam_results"):
-        print "Start process broaster"
+        #print "Start process broaster"
         self._exam_root = exam_root
 
     def find_log(self, description):
@@ -59,7 +59,7 @@ class ProcessBroaster(object):
                     print "Found description in %s" % full_path
                     return name
 
-        return False
+        return "not found"
    
     def check_sub(self, full_path, description):
         """ Look at the exam info file in the specified directory,
@@ -70,7 +70,7 @@ class ProcessBroaster(object):
 
                 sysname = "%s/%s/" % (full_path, dirname)
                 sysname += "%s_system_info.txt" % dirname
-                print "Open %s" % sysname
+                #print "Open %s" % sysname
                 sysfile = open(sysname)
                 for line in sysfile.readlines():
                     #print "line is: %s" % line
@@ -80,7 +80,7 @@ class ProcessBroaster(object):
                         return True, ret_file
                 sysfile.close()
 
-        print "Description %s not found" % description
+        #print "Description %s not found" % description
         return False, "not found"
 
     def process_log(self, filename):
