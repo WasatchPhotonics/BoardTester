@@ -54,13 +54,14 @@ class ProcessBroaster(object):
         for (dirpath, dirnames, filenames) in os.walk(self._exam_root):
             for dirname in dirnames:
                 full_path = "%s/%s" % (dirpath, dirname)
-                if self.check_each_sub(full_path, description):
+                result, name = self.check_sub(full_path, description)
+                if result:
                     print "Found description in %s" % full_path
-                    return True
+                    return name
 
         return False
    
-    def check_each_sub(self, full_path, description):
+    def check_sub(self, full_path, description):
         """ Look at the exam info file in the specified directory,
         return true if the description text is present.
         """
@@ -74,13 +75,31 @@ class ProcessBroaster(object):
                 for line in sysfile.readlines():
                     #print "line is: %s" % line
                     if description in line:
-                        return True
+                        ret_file = "%s/%s" % (full_path, dirname)
+                        ret_file += "/exam_log.txt"
+                        return True, ret_file
                 sysfile.close()
 
         print "Description %s not found" % description
-        return False
+        return False, "not found"
 
+    def process_log(self, filename):
+        """ Look for all the pass/fail criteria entries in a log file.
+        Return a text summary of the failure rates.
+        """
+        log_file = open(filename)
+        fail_count = 0
+        pass_count = 0
+        for line in log_file.readlines():
+            # Only check the usb bulk read status for now
+            if 'Error lines info' in line:
+                fail_count += 1
+            elif "Line: 9 length is: 1024" in line:
+                pass_count += 1
+ 
 
+        summ_str = "%s Fail, %s Pass" % (fail_count, pass_count)
+        return summ_str
 
 class WasatchBroaster_Exam(object):
     """ Power cycle devices, store results in automatically created log

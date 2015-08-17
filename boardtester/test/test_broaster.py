@@ -22,11 +22,12 @@ from boardtester import broaster
 class Test(unittest.TestCase):
 
     def setUp(self):
-        self.usage_str = "usage: python broaster.py"
-        self.usage_str += " --iterations N --description \"text\""
-        self.usage_str += "\n"
-        self.usage_str += "Where N is a number 0-10000\n"
-        self.usage_str += "And text is phrase in quotes\n"
+        # Clean any old directories
+        self.node_root = "exam_results/test_example_node"
+        if os.path.exists(self.node_root):
+            shutil.rmtree(self.node_root)
+        result = os.path.exists(self.node_root)
+        self.assertFalse(result)
 
     
     def test_run_broaster(self):
@@ -63,14 +64,7 @@ class Test(unittest.TestCase):
         result = self.sae.lines_info(1)
         self.assertTrue("Error lines info" in result)
     
-    def test_process_results(self):
-
-        # Clean any old directories
-        node_root = "exam_results/test_example_node"
-        if os.path.exists(node_root):
-            shutil.rmtree(node_root)
-        result = os.path.exists(node_root)
-        self.assertFalse(result)
+    def test_find_log(self):
 
         exam_description = "unfindable"
         self.proc = broaster.ProcessBroaster()
@@ -79,9 +73,8 @@ class Test(unittest.TestCase):
 
         # Now copy over a known exam result file, and make sure it can
         # be found
-        
 
-        new_path = "%s/9/" % node_root
+        new_path = "%s/9/" % self.node_root
         os.makedirs(new_path)
         result = os.path.exists(new_path)
         self.assertTrue(result)
@@ -94,7 +87,28 @@ class Test(unittest.TestCase):
 
         exam_description = "actual test"
         result = self.proc.find_log(exam_description) 
-        self.assertTrue(result) 
+        lf = "exam_results/test_example_node/9/exam_log.txt"
+        self.assertEqual(lf, result)
+
+    def test_process_log(self):
+        # Create a known exam log, process results
+        self.proc = broaster.ProcessBroaster()
+        new_path = "%s/9/" % self.node_root
+        os.makedirs(new_path)
+
+        kd = "boardtester/test/known_results/9/9_system_info.txt"
+        dst_file = "%s/9_system_info.txt" % new_path
+        shutil.copyfile(kd, dst_file)
+
+        kd = "boardtester/test/known_results/9/exam_log.txt"
+        dst_file = "%s/exam_log.txt" % new_path
+        shutil.copyfile(kd, dst_file)
+
+        exam_description = "actual test"
+        filename = self.proc.find_log(exam_description) 
+
+        result = self.proc.process_log(filename)
+        self.assertEqual(result, "36 Fail, 32 Pass")
 
 
 if __name__ == "__main__":
