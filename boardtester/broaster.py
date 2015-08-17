@@ -44,7 +44,7 @@ class ProcessBroaster(object):
         # Check for root directory
         if not os.path.exists(self._exam_root):
             print "Exam root: %s does not exist"
-            return False
+            return "invalid exam root"
 
         # For each sub directory in the root, walk through all
         # directories, and look for the description text in the system

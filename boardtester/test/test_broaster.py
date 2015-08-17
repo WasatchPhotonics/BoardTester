@@ -63,13 +63,20 @@ class Test(unittest.TestCase):
          
         result = self.sae.lines_info(1)
         self.assertTrue("Error lines info" in result)
-    
+   
+    def test_find_log_no_results(self):
+        # Give in invalid exam results directory, make sure it says not
+        # found
+        proc = broaster.ProcessBroaster("No_records")
+        result = proc.find_log("test text here")
+        self.assertEquals("invald exam root", result)
+ 
     def test_find_log(self):
 
         exam_description = "unfindable"
         self.proc = broaster.ProcessBroaster()
-        result = self.proc.find_log(exam_description) 
-        self.assertFalse(result) 
+        filename = self.proc.find_log(exam_description) 
+        self.assertEquals("not found", filename)
 
         # Now copy over a known exam result file, and make sure it can
         # be found
