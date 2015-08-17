@@ -1,6 +1,5 @@
 BoardTester - collect data with automated hardware power cycling
 
-provides: broaster, camids
 
 
 broaster 
