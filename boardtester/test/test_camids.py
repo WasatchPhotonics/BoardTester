@@ -58,6 +58,8 @@ class Test(unittest.TestCase):
         self.assertTrue(result)
 
     def test_start_stop_ueye(self):
+        self.ids = camids.WasatchCamIDS_Exam(self.exam_desc)
+
         # List the current running processes, make sure ueye is not one of them
         self.assertFalse(self.ids.check_for_ueye())
 
