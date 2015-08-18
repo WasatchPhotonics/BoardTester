@@ -101,7 +101,7 @@ class ProcessBroaster(object):
         summ_str = "%s Fail, %s Pass" % (fail_count, pass_count)
         return summ_str
 
-class WasatchBroaster_Exam(object):
+class WasatchCamIDS_Exam(object):
     """ Power cycle devices, store results in automatically created log
     files.
     """
@@ -109,8 +109,13 @@ class WasatchBroaster_Exam(object):
     def __init__(self, exam_name):
         print "exam name is [%s]" % exam_name
         self.ex = Exam(exam_name) 
-        self.vid = 0x24aa
-        self.pid = 0x0009
+        self.buf_history = ""
+
+    def bprint(self, in_str):
+        """ Helper function to store all text before it is printed to the screen.
+        """
+        self.buf_history += in_str
+        print in_str
 
     def run(self, max_runs=100):
         """ Main loop for the broaster exam. Turns on the device, waits,
@@ -122,111 +127,55 @@ class WasatchBroaster_Exam(object):
 
         count = 1
         while count < max_runs+1:
-            print "Starting exam %s of %s ..." % (count, max_runs),
-            self.power_on(count, wait_interval=sleep_duration)
+            self.bprint("Starting exam %s of %s ..." % (count, max_runs))
+            #self.power_on(count, wait_interval=sleep_duration)
 
-            self.bus_info(count)
-            self.revision_info(count)
-            self.lines_info(count)
 
-            self.disconnect(count)
-            self.power_off(count, wait_interval=sleep_duration)
+            #self.power_off(count, wait_interval=sleep_duration)
 
             count += 1
-            print "done"
+            self.bprint("done")
 
-        print "Processed %s exams." % max_runs
-        print "Exams complete, results in: %s" % self.ex.exam_dir
+        self.bprint("Processed %s exams." % max_runs)
+        self.bprint("Exams complete, results in: %s" % self.ex.exam_dir)
+        return self.buf_history
 
+    def move_and_click(self, posx, posy, wait_interval=1):
+        """ Move the mouse to specified coordinates, click the left button"""
+        import ctypes
+        u32 = ctypes.windll.user32
+        u32.SetCursorPos(int(posx), int(posy))
+        u32.mouse_event(2, 0, 0, 0, 0) # left down
+        u32.mouse_event(4, 0, 0, 0, 0) # left up
+        
+        time.sleep(wait_interval)
+        return True
 
-    def disconnect(self, count):
-        """ Disconnect the usb device if still connected.
-        """
-        discon_str = " Start of disconnection "
-        try:
-            result = self.device.disconnect()
-            discon_str += " result [%s]" % result
-        except:
-            discon_str = "Error disconnect: %s" % str(sys.exc_info())
-            
-        self.append_to_log(self.ex, count, discon_str)
-        return discon_str
+    def start_ueye(self):
+        ueye_exec = '''"C:\Program Files\IDS\uEye\Program\uEyeCockpit.exe"'''
+          
+        from subprocess import Popen
+        result = Popen(ueye_exec)
+        print "Startup result: %s, wait 5" % result
+        time.sleep(5)
+        return True
 
-    def revision_info(self, count):
-        """ Actually connect to the device, get the firmware revisions
-        """
-        revision_str = " Start of revision info " 
-        try:
-            device = camera.CameraUSB()
-            self.device = device
-            result = device.connect(self.vid, self.pid)
-            revision_str += " result [%s] " % result
-    
-            codes = self.get_revisions(device) 
-            revision_str += " %s " % codes
-        except:
-            revision_str += " Error get revision: %s" % str(sys.exc_info())
+    def stop_ueye(self):
+        import os
+        ueye_kill = '''"taskkill /IM uEyeCockpit.exe"'''
+        result = os.system(ueye_kill)
+        print "Kill result: %s" % result
+        return True
 
-        self.append_to_log(self.ex, count, revision_str)
-        return revision_str
+    def take_screenshot(self, exam, suffix):
+        screen_file = "%s/test_screenshot_%s.png" % (exam.exam_dir, 
+                                                     suffix)
 
-    def bus_info(self, count):
-        """ Print host usb information, dont' connect to the
-        device. Use Host system facility to find devices.""" 
-        bus_str = " Start of bus info " 
-        fd = FindDevices()
-        result, usb_info = fd.list_usb()
-        bus_str += " USB ID strings: %s" % usb_info
+        # take a screenshot, save it to disk
+        from PIL import ImageGrab
+        im = ImageGrab.grab()
+        im.save(screen_file)
 
-        result, serial = fd.get_serial(self.vid, self.pid)
-        bus_str += " Serial USB Descriptor: %s" % serial
-
-        self.append_to_log(self.ex, count, bus_str)
-   
-    def lines_info(self, count):
-        """ Read various groups of lines from the device.
-        """
-        line_info = " Start of line info "
-        try:
-            result = self.check_bulk_data(self.device, 10)
-            line_info += result
-        except:
-            line_info += " Error lines info: %s" % str(sys.exc_info())
-
-        self.append_to_log(self.ex, count, line_info) 
-        return line_info
-
-    def check_bulk_data(self, device, line_count):
-        """ Perform the read of the specified number of lines from the
-        device.
-        """
-        curr_count = 0 
-        result = " Start read of %s lines" % line_count
-        while curr_count < line_count: 
-            status, pixel_data = device.get_line()
-
-            # Dont' do the performance checks here, that's later in log
-            # file processing
-            result += " Line: %s length is: %s" % (curr_count, 
-                                                   len(pixel_data))
-
-            curr_count += 1
-
-        return result
-
-    def get_revisions(self, device):
-        result, sw_code = device.get_sw_code()
-        result, fpga_code = device.get_fpga_code()
-    
-        code_str = "SW: %s FPGA: %s" % (sw_code, fpga_code)
-        return code_str
-
-    def append_to_log(self, ex, count, text):
-        log_filename = "%s/exam_log.txt" % ex.exam_dir
-
-        out_file = open(log_filename, "a+")
-        out_file.write("%s: %s\n" % (count, text))
-        out_file.close()
 
     def power_on(self, count, wait_interval=5):
         on_msg = "Turn on relay, wait %s seconds" % wait_interval
@@ -291,8 +240,8 @@ class CamIDSUtils(object):
  
  
 if __name__ == "__main__":
-    butil = BroasterUtils()
-    print butil.colorama_broaster()
+    camutil = CamIDSUtils()
+    print camutil.colorama_camids()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--iterations", type=int, required=True,

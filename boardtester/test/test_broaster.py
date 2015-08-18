@@ -65,7 +65,7 @@ class Test(unittest.TestCase):
         self.assertTrue("Error lines info" in result)
    
     def test_find_log_no_results(self):
-        # Give in invalid exam results directory, make sure it says not
+        # Give an invalid exam results directory, make sure it says not
         # found
         proc = broaster.ProcessBroaster("No_records")
         result = proc.find_log("test text here")
