@@ -27,80 +27,6 @@ from wasatchusb import camera
 from wasatchusb.utils import FindDevices
 from phidgeter import relay
 
-class ProcessBroaster(object):
-    """ Look through the existing exam results, and create statistics
-    about pass and failure rates.
-    """
-    def __init__(self, exam_root="exam_results"):
-        #print "Start process broaster"
-        self._exam_root = exam_root
-
-    def find_log(self, description):
-        """ Look through each exam log entry, and return the full exam
-        log if the description is found in the file.
-        """
-
-
-        # Check for root directory
-        if not os.path.exists(self._exam_root):
-            print "Exam root: %s does not exist"
-            return "invalid exam root"
-
-        # For each sub directory in the root, walk through all
-        # directories, and look for the description text in the system
-        # info file
-
-        list_of_files = {}
-        for (dirpath, dirnames, filenames) in os.walk(self._exam_root):
-            for dirname in dirnames:
-                full_path = "%s/%s" % (dirpath, dirname)
-                result, name = self.check_sub(full_path, description)
-                if result:
-                    print "Found description in %s" % full_path
-                    return name
-
-        return "not found"
-   
-    def check_sub(self, full_path, description):
-        """ Look at the exam info file in the specified directory,
-        return true if the description text is present.
-        """
-        for (dirpath, dirnames, filenames) in os.walk(full_path):
-            for dirname in dirnames:
-
-                sysname = "%s/%s/" % (full_path, dirname)
-                sysname += "%s_system_info.txt" % dirname
-                #print "Open %s" % sysname
-                sysfile = open(sysname)
-                for line in sysfile.readlines():
-                    #print "line is: %s" % line
-                    if description in line:
-                        ret_file = "%s/%s" % (full_path, dirname)
-                        ret_file += "/exam_log.txt"
-                        return True, ret_file
-                sysfile.close()
-
-        #print "Description %s not found" % description
-        return False, "not found"
-
-    def process_log(self, filename):
-        """ Look for all the pass/fail criteria entries in a log file.
-        Return a text summary of the failure rates.
-        """
-        log_file = open(filename)
-        fail_count = 0
-        pass_count = 0
-        for line in log_file.readlines():
-            # Only check the usb bulk read status for now
-            if 'Error lines info' in line:
-                fail_count += 1
-            elif "Line: 9 length is: 1024" in line:
-                pass_count += 1
- 
-
-        summ_str = "%s Fail, %s Pass" % (fail_count, pass_count)
-        return summ_str
-
 class WasatchCamIDS_Exam(object):
     """ Power cycle devices, store results in automatically created log
     files.
@@ -128,10 +54,25 @@ class WasatchCamIDS_Exam(object):
         count = 1
         while count < max_runs+1:
             self.bprint("Starting exam %s of %s ..." % (count, max_runs))
-            #self.power_on(count, wait_interval=sleep_duration)
+            self.power_on(count, wait_interval=sleep_duration)
+
+            if self.check_for_ueye():
+                self.bprint("uEye software already running, fail!")
+                sys.exit(1)
+
+            self.start_ueye()
+            time.sleep(5)
+
+            if not self.check_for_ueye():
+                self.bprint("Can't start ueye software, fail!")
+                sys.exit(1)
 
 
-            #self.power_off(count, wait_interval=sleep_duration)
+            filename = "%s/%s_screenshot.png" % (self.ex.exam_dir, count)
+            self.save_screenshot(filename)
+
+            self.stop_ueye()
+            self.power_off(count, wait_interval=sleep_duration)
 
             count += 1
             self.bprint("done")
@@ -180,13 +121,14 @@ class WasatchCamIDS_Exam(object):
                 return True
         return False
 
-    def take_screenshot(self, exam_dir, suffix):
-        screen_file = "%s/test_screenshot_%s.png" % (exam_dir, suffix)
+    def save_screenshot(self, filename):
+        """ Use Pillow to take a screenshot and save to filename."""
 
         # take a screenshot, save it to disk
         from PIL import ImageGrab
         im = ImageGrab.grab()
-        im.save(screen_file)
+        im.save(filename)
+        return True
 
 
     def power_on(self, count, wait_interval=5):
@@ -200,7 +142,6 @@ class WasatchCamIDS_Exam(object):
         on_msg += " Relay three on Result: %s" % result
 
         time.sleep(wait_interval)
-        self.append_to_log(self.ex, count, on_msg)
 
     def power_off(self, count, wait_interval=5):
         off_msg = "Turn off relay, wait %s seconds" % wait_interval
@@ -214,7 +155,6 @@ class WasatchCamIDS_Exam(object):
         off_msg += " Relay three off result: %s" % result
 
         time.sleep(wait_interval)
-        self.append_to_log(self.ex, count, off_msg)
 
 class CamIDSUtils(object):
     """ Helper functions for displaying text and information about the

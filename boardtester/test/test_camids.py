@@ -14,13 +14,8 @@ class Test(unittest.TestCase):
 
     def setUp(self):
         # Clean any old directories
-        self.node_root = "exam_results/test_ids_example_node"
         self.exam_iter = 1
         self.exam_desc = "run camids test"
-        if os.path.exists(self.node_root):
-            shutil.rmtree(self.node_root)
-        result = os.path.exists(self.node_root)
-        self.assertFalse(result)
 
     
     def test_color_camids(self):
@@ -32,17 +27,6 @@ class Test(unittest.TestCase):
         # Look for the bottom of the CAMIDS text
 	      #print "result \n%s" % result
         self.assertTrue("|_____|_____/|_____/" in result)
-
-
-    def test_run_camids(self):
-        self.ids = camids.WasatchCamIDS_Exam(self.exam_desc)
-        result = self.ids.run(self.exam_iter)
-
-        start_str = "Starting exam 1 of 1"
-        endin_str = "Exams complete, results in"
-
-        self.assertTrue(start_str in result)
-        self.assertTrue(endin_str in result)
 
 
     def test_ueye_available(self):
@@ -86,18 +70,39 @@ class Test(unittest.TestCase):
         # least N bytes
         self.ids = camids.WasatchCamIDS_Exam(self.exam_desc)
 
-        dir_name = self.node_root
-        suffix = 3
-        filename = "%s/test_screenshot_%s.png" % (dir_name, suffix)
-
-        self.assertTrue(self.ids.take_screenshot(dir_name, suffix))
-
+        filename = "test_screenshot.png"
+        self.assertTrue(self.ids.save_screenshot(filename))
         result = os.path.isfile(filename)
         self.assertTrue(result)
 
         size = os.path.getsize(filename)
-        self.assertGreater(size, 200000)
+        self.assertGreater(size, 100000)
+
+    def test_run_camids(self):
+        # Given a iteration of 1 and test description, make sure the
+        # directory structure is created, and the screenshots are saved
+        # to file
+
+        import time
+        readable_time = time.time()
+
+        self.exam_desc = "camids run test %s" % readable_time
+        
+        self.ids = camids.WasatchCamIDS_Exam(self.exam_desc)
+        result = self.ids.run(1)
+
+        start_str = "Starting exam 1 of 1"
+        endin_str = "Exams complete, results in"
+
+        self.assertTrue(start_str in result)
+        self.assertTrue(endin_str in result)
+
+        filename = "%s/1_screenshot.png" % self.ids.ex.exam_dir
+        result = os.path.isfile(filename)
+        self.assertTrue(result)
+
 
 
 if __name__ == "__main__":
     unittest.main()
+
