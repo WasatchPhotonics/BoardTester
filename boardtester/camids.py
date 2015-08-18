@@ -180,9 +180,8 @@ class WasatchCamIDS_Exam(object):
                 return True
         return False
 
-    def take_screenshot(self, exam, suffix):
-        screen_file = "%s/test_screenshot_%s.png" % (exam.exam_dir, 
-                                                     suffix)
+    def take_screenshot(self, exam_dir, suffix):
+        screen_file = "%s/test_screenshot_%s.png" % (exam_dir, suffix)
 
         # take a screenshot, save it to disk
         from PIL import ImageGrab
