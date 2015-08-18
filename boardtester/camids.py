@@ -152,6 +152,7 @@ class WasatchCamIDS_Exam(object):
         return True
 
     def start_ueye(self):
+        """ Start the software from IDS, wait 5 seconds for it to be ready."""
         ueye_exec = '''"C:\Program Files\IDS\uEye\Program\uEyeCockpit.exe"'''
           
         from subprocess import Popen
@@ -161,11 +162,23 @@ class WasatchCamIDS_Exam(object):
         return True
 
     def stop_ueye(self):
+        """ Kill the software from IDS - no clean, no confirmation, just kill."""
         import os
         ueye_kill = '''"taskkill /IM uEyeCockpit.exe"'''
         result = os.system(ueye_kill)
         print "Kill result: %s" % result
         return True
+
+    def check_for_ueye(self):
+        """ List all system processes, return true if uEyeCockpit is found."""
+        import wmi
+        wmi_obj = wmi.WMI()
+
+        for process in wmi_obj.Win32_Process():
+            if "uEye" in process.Name:
+                print "Found ueye: %s, %s" % (process.processId, process.Name)
+                return True
+        return False
 
     def take_screenshot(self, exam, suffix):
         screen_file = "%s/test_screenshot_%s.png" % (exam.exam_dir, 

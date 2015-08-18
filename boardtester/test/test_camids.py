@@ -6,6 +6,7 @@ import unittest
 import sys
 import os
 import shutil
+import time
 
 from boardtester import camids
 
@@ -64,13 +65,14 @@ class Test(unittest.TestCase):
         self.assertFalse(self.ids.check_for_ueye())
 
         # Start ueye
-        self.assertFalse(self.ids.start_ueye())
+        self.assertTrue(self.ids.start_ueye())
 
         # Make sure ueye is running
         self.assertTrue(self.ids.check_for_ueye())
 
         # Stop ueye
-        self.assertFalse(self.ids.stop_ueye())
+        self.assertTrue(self.ids.stop_ueye())
+        time.sleep(5)
 
         # List the current running processes, make sure ueye is not one of them
         self.assertFalse(self.ids.check_for_ueye())
