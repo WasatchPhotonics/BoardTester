@@ -69,14 +69,14 @@ class Test(unittest.TestCase):
         # found
         proc = broaster.ProcessBroaster("No_records")
         result = proc.find_log("test text here")
-        self.assertEquals("invald exam root", result)
+        self.assertEquals("invalid exam root", result)
  
     def test_find_log(self):
 
         exam_description = "unfindable"
         self.proc = broaster.ProcessBroaster()
         filename = self.proc.find_log(exam_description) 
-        self.assertEquals("not found", filename)
+        self.assertEquals("invalid exam root", filename)
 
         # Now copy over a known exam result file, and make sure it can
         # be found
