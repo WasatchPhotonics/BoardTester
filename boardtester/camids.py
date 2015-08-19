@@ -160,9 +160,9 @@ class WasatchCamIDS_Exam(object):
         phd_relay = relay.Relay()
 
         # Disable +VCC first
-        result = phd_relay.two_on()
-        result = phd_relay.one_on()
-        result = phd_relay.zero_on()
+        result = phd_relay.two_off()
+        result = phd_relay.one_off()
+        result = phd_relay.zero_off()
 
         time.sleep(wait_interval)
 
