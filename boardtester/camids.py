@@ -67,11 +67,20 @@ class WasatchCamIDS_Exam(object):
                 self.bprint("Can't start ueye software, fail!")
                 sys.exit(1)
 
+            # Manually positioned window, saves it's state
+            self.move_and_click(20, 60, wait_interval=1)
+            time.sleep(5)
 
             filename = "%s/%s_screenshot.png" % (self.ex.exam_dir, count)
             self.save_screenshot(filename)
 
             self.stop_ueye()
+            # Doesn't always work the first time, do it again
+            self.stop_ueye()
+            time.sleep(1)
+            # One more time, just to be sure
+            self.stop_ueye()
+
             self.power_off(count, wait_interval=sleep_duration)
 
             count += 1
@@ -98,16 +107,18 @@ class WasatchCamIDS_Exam(object):
           
         from subprocess import Popen
         result = Popen(ueye_exec)
-        print "Startup result: %s, wait 5" % result
+        #print "Startup result: %s, wait 5" % result
         time.sleep(5)
         return True
 
     def stop_ueye(self):
         """ Kill the software from IDS - no clean, no confirmation, just kill."""
         import os
-        ueye_kill = '''"taskkill /IM uEyeCockpit.exe"'''
+        # > /NUL is to keep the 'sent termination...' message from printing
+        # Would be nice to capture it and send it to log
+        ueye_kill = '''"taskkill /IM uEyeCockpit.exe 1> NUL 2> NUL"'''
         result = os.system(ueye_kill)
-        print "Kill result: %s" % result
+        #print "Kill result: %s" % result
         return True
 
     def check_for_ueye(self):
@@ -117,7 +128,7 @@ class WasatchCamIDS_Exam(object):
 
         for process in wmi_obj.Win32_Process():
             if "uEye" in process.Name:
-                print "Found ueye: %s, %s" % (process.processId, process.Name)
+                #print "Found ueye: %s, %s" % (process.processId, process.Name)
                 return True
         return False
 
@@ -132,27 +143,26 @@ class WasatchCamIDS_Exam(object):
 
 
     def power_on(self, count, wait_interval=5):
-        on_msg = "Turn on relay, wait %s seconds" % wait_interval
+        """ With a phidget with dual screw terminals per relay configured:
+            0 - Ground , shield
+            1 - DATA+ , DATA-
+            2 - +VCC
+        """
+
         phd_relay = relay.Relay()
-
         result = phd_relay.zero_on()
-        on_msg += " Relay zero on Result: %s" % result
-
-        result = phd_relay.three_on()
-        on_msg += " Relay three on Result: %s" % result
+        result = phd_relay.one_on()
+        result = phd_relay.two_on()
 
         time.sleep(wait_interval)
 
     def power_off(self, count, wait_interval=5):
-        off_msg = "Turn off relay, wait %s seconds" % wait_interval
         phd_relay = relay.Relay()
-        
-        result = phd_relay.zero_off()
-        off_msg += " Relay zero off result: %s" % result
 
-        # odroid 
-        result = phd_relay.three_off()
-        off_msg += " Relay three off result: %s" % result
+        # Disable +VCC first
+        result = phd_relay.two_on()
+        result = phd_relay.one_on()
+        result = phd_relay.zero_on()
 
         time.sleep(wait_interval)
 
@@ -162,21 +172,21 @@ class CamIDSUtils(object):
     """
     def __init__(self):
         self.camids_text = """
-##########################################################
-#         _____          __  __ _____ _____   _____      #
-#        / ____|   /\   |  \/  |_   _|  __ \ / ____|     #
-#       | |       /  \  | \  / | | | | |  | | (___       #
-#       | |      / /\ \ | |\/| | | | | |  | |\___ \      #
-#       | |____ / ____ \| |  | |_| |_| |__| |____) |     #
-#        \_____/_/    \_\_|  |_|_____|_____/|_____/      #
-#							 #
-##########################################################
+###########################################################
+#         _____          __  __ _____ _____   _____       #
+#        / ____|   /\   |  \/  |_   _|  __ \ / ____|      #
+#       | |       /  \  | \  / | | | | |  | | (___        #
+#       | |      / /\ \ | |\/| | | | | |  | |\___ \       #
+#       | |____ / ____ \| |  | |_| |_| |__| |____) |      #
+#        \_____/_/    \_\_|  |_|_____|_____/|_____/       #
+#                                                         #
+###########################################################
 """ 
     def colorama_camids(self):
         lines = self.camids_text.split('\n')
         colorama.init()
     
-        color_str = Fore.BLUE + lines[1] + '\n'
+        color_str = Fore.GREEN + lines[1] + '\n'
         color_str += Fore.GREEN + lines[2] + '\n'
         color_str += Fore.GREEN + lines[3] + '\n'
         color_str += Fore.GREEN + lines[4] + '\n'
@@ -184,8 +194,8 @@ class CamIDSUtils(object):
         color_str += Fore.GREEN + lines[6] + '\n'
         color_str += Fore.GREEN + lines[7] + '\n'
         color_str += Fore.GREEN + lines[8] + '\n'
-        color_str += Fore.BLUE + lines[9] + '\n'
-        color_str += Fore.BLUE + lines[10] + '\n'
+        color_str += Fore.GREEN + lines[9] + '\n'
+        color_str += Fore.GREEN + lines[10] + '\n'
     
         color_str += Style.RESET_ALL
         return color_str
@@ -203,5 +213,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
 
-    sae = WasatchBroaster_Exam(args.description)
-    sae.run(args.iterations)
+    ids = WasatchCamIDS_Exam(args.description)
+    ids.run(args.iterations)

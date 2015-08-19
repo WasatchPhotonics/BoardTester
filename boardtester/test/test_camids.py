@@ -25,7 +25,7 @@ class Test(unittest.TestCase):
         result = camutil.colorama_camids()
 
         # Look for the bottom of the CAMIDS text
-	      #print "result \n%s" % result
+        #print "result \n%s" % result
         self.assertTrue("|_____|_____/|_____/" in result)
 
 
