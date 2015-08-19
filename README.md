@@ -16,3 +16,4 @@ camids
     Repeat. Store the data for later analysis.
 
 
+![camids screenshot](/docs/camids.png "camids screenshot")
