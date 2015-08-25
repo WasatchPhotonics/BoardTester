@@ -45,7 +45,8 @@ class WasatchCamIDS_Exam(object):
 
     def run(self, max_runs=100):
         """ Main loop for the broaster exam. Turns on the device, waits,
-        stores communication results, turns off the device. Repeat."""
+        stores communication results, turns off the device. Repeat.
+        """
         
         # This variable is key - sometimes the boards take 30+ seconds
         # to appear on the usb bus.  
@@ -69,6 +70,8 @@ class WasatchCamIDS_Exam(object):
 
             # Manually positioned window, saves it's state
             self.move_and_click(20, 60, wait_interval=1)
+
+            # 993, 591 LAOCT OD button
             time.sleep(5)
 
             filename = "%s/%s_screenshot.png" % (self.ex.exam_dir, count)
@@ -91,7 +94,8 @@ class WasatchCamIDS_Exam(object):
         return self.buf_history
 
     def move_and_click(self, posx, posy, wait_interval=1):
-        """ Move the mouse to specified coordinates, click the left button"""
+        """ Move the mouse to specified coordinates, click the left button
+        """
         import ctypes
         u32 = ctypes.windll.user32
         u32.SetCursorPos(int(posx), int(posy))
@@ -102,7 +106,8 @@ class WasatchCamIDS_Exam(object):
         return True
 
     def start_ueye(self):
-        """ Start the software from IDS, wait 5 seconds for it to be ready."""
+        """ Start the software from IDS, wait 5 seconds for it to be ready.
+        """
         ueye_exec = '''"C:\Program Files\IDS\uEye\Program\uEyeCockpit.exe"'''
           
         from subprocess import Popen
@@ -112,7 +117,8 @@ class WasatchCamIDS_Exam(object):
         return True
 
     def stop_ueye(self):
-        """ Kill the software from IDS - no clean, no confirmation, just kill."""
+        """ Kill the software from IDS - no clean, no confirmation, just kill.
+        """
         import os
         # > /NUL is to keep the 'sent termination...' message from printing
         # Would be nice to capture it and send it to log
@@ -122,7 +128,20 @@ class WasatchCamIDS_Exam(object):
         return True
 
     def check_for_ueye(self):
-        """ List all system processes, return true if uEyeCockpit is found."""
+        """ List all system processes, return true if uEyeCockpit is found.
+        """
+        import wmi
+        wmi_obj = wmi.WMI()
+
+        for process in wmi_obj.Win32_Process():
+            if "uEye" in process.Name:
+                #print "Found ueye: %s, %s" % (process.processId, process.Name)
+                return True
+        return False
+    
+    def check_for_ueye(self):
+        """ List all system processes, return true if uEyeCockpit is found.
+        """
         import wmi
         wmi_obj = wmi.WMI()
 
@@ -132,8 +151,45 @@ class WasatchCamIDS_Exam(object):
                 return True
         return False
 
+    def check_for_LAOCT(self):
+        """ List all system processe, return true if LargeAnimal is found.
+        """
+        import wmi
+        wmi_obj = wmi.WMI()
+
+        for process in wmi_obj.Win32_Process():
+            if "LargeAnimal" in process.Name:
+                return True
+        return False
+
+    def start_LAOCT(self):
+        """ Start the software from wasatch, wait 5 seconds for it to be
+        ready.
+        """
+        LAOCT_exec = '''"C:\\Wasatch\\Software\\OCT\\LargeAnimal OCT_6_29_15_centerImage\\bin\\Release\\LargeAnimalOCT.exe"'''
+
+        print "Try and open %s" % LAOCT_exec  
+        from subprocess import Popen
+        result = Popen(LAOCT_exec)
+        print "Startup result: %s, wait 5" % result
+        time.sleep(5)
+        return True
+
+    def stop_LAOCT(self):
+        """ Kill the software from Wasatch - no clean, no confirmation,
+        just kill.
+        """
+        import os
+        # > /NUL is to keep the 'sent termination...' message from printing
+        # Would be nice to capture it and send it to log
+        ueye_kill = '''"taskkill /IM LargeAnimalOCT.exe 1> NUL 2> NUL"'''
+        result = os.system(ueye_kill)
+        #print "Kill result: %s" % result
+        return True
+    
     def save_screenshot(self, filename):
-        """ Use Pillow to take a screenshot and save to filename."""
+        """ Use Pillow to take a screenshot and save to filename.
+        """
 
         # take a screenshot, save it to disk
         from PIL import ImageGrab

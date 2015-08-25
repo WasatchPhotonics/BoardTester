@@ -102,6 +102,31 @@ class Test(unittest.TestCase):
         self.assertTrue(result)
 
 
+    def test_start_stop_LargeAnimalOCT(self):
+        """ Make sure the oct software can be started and stopped as
+        part of the test procedure.
+        """
+        self.ids = camids.WasatchCamIDS_Exam(self.exam_desc)
+
+        # List the current running processes, make sure laoct is not one
+        # of them
+        self.assertFalse(self.ids.check_for_LAOCT())
+
+        # Start 
+        self.assertTrue(self.ids.start_LAOCT())
+
+        # Make sure running
+        self.assertTrue(self.ids.check_for_LAOCT())
+
+        # Stop 
+        self.assertTrue(self.ids.stop_LAOCT())
+        time.sleep(5)
+
+        # List the current running processes, make sure ueye is not one
+        # of them
+        self.assertFalse(self.ids.check_for_LAOCT())
+
+
 
 if __name__ == "__main__":
     unittest.main()
