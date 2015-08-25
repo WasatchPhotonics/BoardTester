@@ -44,6 +44,77 @@ class WasatchCamIDS_Exam(object):
         print in_str
 
     def run(self, max_runs=100):
+        """ Main loop for camids transformation into Wasatch Spark
+        Large animal oct click and move fundus mode imager test.
+        Like uEye Cockpit, but take a screenshot of the spark software.
+
+        THIS WILL ONLY WORK IF YOU TURN OFF 'stopped working' dialogs
+        using the exec in utils/
+        """
+
+        max_retries = 5
+        count = 1
+        sleep_duration = 10.1 # IDS camera boot cycle
+        
+        while count < max_runs+1:
+            self.bprint("Starting exam %s of %s ..." % (count, max_runs))
+            self.power_on(count, wait_interval=sleep_duration)
+
+            retry_count = 0
+            while retry_count < max_retries:
+            
+                print "Trying close: %s" % retry_count
+                result = self.stop_LAOCT()
+                retry_count += 1
+                if not self.check_for_LAOCT():
+                    retry_count = max_retries
+                else:
+                    time.sleep(1)
+
+            if self.check_for_LAOCT():
+                self.bprint("LAOCT software already running, fail!")
+                sys.exit(1)
+
+            self.start_LAOCT()
+            time.sleep(5)
+            self.startup_click_LAOCT()
+
+            if not self.check_for_LAOCT():
+                self.bprint("Can't start LAOCT software, fail!")
+                sys.exit(1)
+
+
+            time.sleep(15)
+            filename = "%s/%s_screenshot.png" % (self.ex.exam_dir, count)
+            self.save_screenshot(filename)
+
+
+            retry_count = 0
+            while retry_count < max_retries:
+            
+                print "Trying close: %s" % retry_count
+                result = self.stop_LAOCT()
+                retry_count += 1
+                if not self.check_for_LAOCT():
+                    retry_count = max_retries
+                else:
+                    time.sleep(1)
+
+                   
+            close_wait = 15
+            print "Tail close wait %s" % close_wait
+            time.sleep(close_wait)
+
+            self.power_off(count, wait_interval=sleep_duration)
+
+            count += 1
+            self.bprint("done")
+
+        self.bprint("Processed %s exams." % max_runs)
+        self.bprint("Exams complete, results in: %s" % self.ex.exam_dir)
+        return self.buf_history
+
+    def ueye_run(self, max_runs=100):
         """ Main loop for the broaster exam. Turns on the device, waits,
         stores communication results, turns off the device. Repeat.
         """
