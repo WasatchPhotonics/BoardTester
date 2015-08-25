@@ -186,6 +186,16 @@ class WasatchCamIDS_Exam(object):
         result = os.system(ueye_kill)
         #print "Kill result: %s" % result
         return True
+
+    def startup_click_LAOCT(self):
+        """ Click the OD button, wait, click the 'live update' button
+        Make sure to set the startup icon to maximized to get the window
+        in the same position every time.
+        """
+        self.move_and_click(993, 591)
+        time.sleep(1)
+        self.move_and_click(967, 764)
+        return True
     
     def save_screenshot(self, filename):
         """ Use Pillow to take a screenshot and save to filename.

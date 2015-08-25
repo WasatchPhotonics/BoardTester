@@ -126,7 +126,33 @@ class Test(unittest.TestCase):
         # of them
         self.assertFalse(self.ids.check_for_LAOCT())
 
+    def test_laoct_click_only(self):
+        """ placeholder test to make sure window is in the right place
+        """
+        self.ids = camids.WasatchCamIDS_Exam(self.exam_desc)
 
+        # Repeatedly kill any running laocts
+        
+        self.assertTrue(self.ids.stop_LAOCT())
+        self.assertTrue(self.ids.stop_LAOCT())
+        time.sleep(1)
+        self.assertTrue(self.ids.stop_LAOCT())
+        self.assertTrue(self.ids.stop_LAOCT())
+
+        self.assertFalse(self.ids.check_for_LAOCT())
+
+        # Start 
+        self.assertTrue(self.ids.start_LAOCT())
+        click_od_wait = 5
+        print "Wait %s before click od" % click_od_wait
+        time.sleep(click_od_wait)
+
+        self.assertTrue(self.ids.startup_click_LAOCT())
+        
+
+        
+        
+    
 
 if __name__ == "__main__":
     unittest.main()
