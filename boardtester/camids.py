@@ -163,6 +163,16 @@ class WasatchCamIDS_Exam(object):
         return False
 
     def start_LAOCT(self):
+        """ Start by double clicking the icon on the desktop. This is
+        apparently necessary, as running the executable directory throws
+        sapera errors.
+        """
+        self.move_and_click(36, 423, 0.01)
+        time.sleep(0.1)
+        self.move_and_click(36, 423, 0.01)
+        return True
+
+    def direct_exec_start_LAOCT(self):
         """ Start the software from wasatch, wait 5 seconds for it to be
         ready.
         """

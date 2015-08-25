@@ -1,0 +1,1 @@
+Unhandled exceptions toggler is from: http://itgeorge.net/disabling-has-stopped-working-dialogs/
