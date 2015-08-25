@@ -108,6 +108,18 @@ class Test(unittest.TestCase):
         """
         self.ids = camids.WasatchCamIDS_Exam(self.exam_desc)
 
+        retry_count = 0
+        max_retries = 5
+        while retry_count < max_retries:
+            
+            print "Trying close: %s" % retry_count
+            result = self.ids.stop_LAOCT()
+            retry_count += 1
+            if not self.ids.check_for_LAOCT():
+                retry_count = max_retries
+            else:
+                time.sleep(1)
+            
         # List the current running processes, make sure laoct is not one
         # of them
         self.assertFalse(self.ids.check_for_LAOCT())
@@ -115,44 +127,12 @@ class Test(unittest.TestCase):
         # Start 
         self.assertTrue(self.ids.start_LAOCT())
 
-        # Make sure running
-        self.assertTrue(self.ids.check_for_LAOCT())
-
-        # Stop 
-        self.assertTrue(self.ids.stop_LAOCT())
-        time.sleep(5)
-
-        # List the current running processes, make sure ueye is not one
-        # of them
-        self.assertFalse(self.ids.check_for_LAOCT())
-
-    def test_laoct_click_only(self):
-        """ placeholder test to make sure window is in the right place
-        """
-        self.ids = camids.WasatchCamIDS_Exam(self.exam_desc)
-
-        # Repeatedly kill any running laocts
-        
-        self.assertTrue(self.ids.stop_LAOCT())
-        self.assertTrue(self.ids.stop_LAOCT())
-        time.sleep(1)
-        self.assertTrue(self.ids.stop_LAOCT())
-        self.assertTrue(self.ids.stop_LAOCT())
-
-        self.assertFalse(self.ids.check_for_LAOCT())
-
-        # Start 
-        self.assertTrue(self.ids.start_LAOCT())
         click_od_wait = 5
         print "Wait %s before click od" % click_od_wait
         time.sleep(click_od_wait)
 
         self.assertTrue(self.ids.startup_click_LAOCT())
-        
 
-        
-        
-    
 
 if __name__ == "__main__":
     unittest.main()
