@@ -16,6 +16,7 @@ import unittest
 import sys
 import os
 import shutil
+import numpy
 
 from boardtester import broaster
 
@@ -116,6 +117,35 @@ class Test(unittest.TestCase):
 
         result = self.proc.process_log(filename)
         self.assertEqual(result, "36 Fail, 32 Pass")
+
+    def test_combined_log_average_trend(self):
+        # Given a combined log file, extract pixel data, create a
+        # per-line of data average, render as line graph
+        fname = "docs/example_combined_log.txt"
+        pixel_file = open(fname)
+
+        #line = pixel_file.readlines()[0]
+            
+        all_avg = numpy.linspace(0, 0, 2048)
+        line_count = 0
+
+        for line in pixel_file.readlines():
+
+            #print "Line: %s" % line 
+            pixels = line.split(',')
+            first_pixel = pixels[0]
+            first_pixel = first_pixel.split(' ')[-1]
+            #print "0: %s" % first_pixel
+    
+            for item in range(1, len(pixels)-1):
+                #print "%s: %s" % (item, pixels[item])
+                all_avg[item] += float(pixels[item])
+
+            line_count += 1
+
+        for item in range(len(all_avg)):
+            avg_val = all_avg[item] / line_count
+            print "Average for pixel %s is %s" % (item, avg_val)
 
 
 if __name__ == "__main__":
