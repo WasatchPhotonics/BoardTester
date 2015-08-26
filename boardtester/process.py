@@ -18,16 +18,23 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--description", required=True,
-                        help="short description of exam")
+        help="short description of exam")
+    parser.add_argument("-n", "--node", 
+        help="With summarize as description, process this entire node")
     args = parser.parse_args()
 
-
-    print "Searching for results file matching: %s" % args.description
-
     proc = ProcessBroaster()
-    filename = proc.find_log(args.description)
-    if filename == "not found":
-        print "Cannot find description: %s" % args.description
+
+    if args.description == "summarize":
+        result = proc.process_mti_group(args.node)
+        print "result is: %s" % result
+        
     else:
-        result = proc.process_log(filename)
-        print "\n%s\n" % result
+        print "Searching for results file matching: %s" % args.description
+
+        filename = proc.find_log(args.description)
+        if filename == "not found":
+            print "Cannot find description: %s" % args.description
+        else:
+            result = proc.process_log(filename)
+            print "\n%s\n" % result

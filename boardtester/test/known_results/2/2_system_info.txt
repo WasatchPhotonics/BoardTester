@@ -1,0 +1,9 @@
+Exam started on kali at local time: 1440538481.45
+Exam description: MTI 2048 pixels, 100 group 2
+System summary: Linux
+kali
+3.18.0-kali3-amd64
+#1 SMP Debian 3.18.6-1~kali2 (2015-03-02)
+x86_64
+
+183a058c-4b71-11e5-a04d-10bf487e64f3

@@ -63,38 +63,20 @@ class ProcessBroaster(object):
         exam_log filenames in the exam_results directory.
         """
 
-
         # Check for root + node_name
         if not os.path.exists(node_path):
             print "Node path: %s does not exist" % node_path
             return "invalid node path"
 
-        print "walk node_path: %s" % node_path
         list_of_files = []
         for (dirpath, dirnames, filenames) in os.walk(node_path):
             for dirname in dirnames:
                 chk_file = "%s/%s/exam_log.txt" % (dirpath, dirname)
-                print "filename: %s" % chk_file
                 if os.path.exists(chk_file):
                     list_of_files.append(chk_file)
-                    print "File: %s " % chk_file
 
         return list_of_files
 
-    def find_exam_log(self, full_path):
-        """ Look in each subdir for the exam_log.txt file.
-        """
-        for (dirpath, dirnames, filenames) in os.walk(full_path):
-            for dirname in dirnames:
-
-                log_filename = "%s/%s/" % (full_path, dirname)
-                log_filename += "exam_log.txt"
-                if os.path.exists(log_filename):
-                    return True, log_filename
-
-        return False, "not found"
-        
-   
     def check_sub(self, full_path, description):
         """ Look at the exam info file in the specified directory,
         return true if the description text is present.
