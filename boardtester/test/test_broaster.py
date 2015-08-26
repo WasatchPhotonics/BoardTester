@@ -164,49 +164,21 @@ class Test(unittest.TestCase):
     def add_known_group(self):
         # Copy a group of known test results to the testing node
         # directory
-        new_path = "%s/1/" % self.node_root
-        os.makedirs(new_path)
-        kd = "boardtester/test/known_results/1/1_system_info.txt"
-        dst_file = "%s/1_system_info.txt" % new_path
-        shutil.copyfile(kd, dst_file)
+        grp_list = ['1', '2', '3']
 
-        kd = "boardtester/test/known_results/1/exam_log.txt"
-        dst_file = "%s/exam_log.txt" % new_path
-        shutil.copyfile(kd, dst_file)
+        for item in grp_list:
+            new_path = "%s/%s/" % (self.node_root, item)
+            os.makedirs(new_path)
 
-        
-        new_path = "%s/2/" % self.node_root
-        os.makedirs(new_path)
-        kd = "boardtester/test/known_results/2/2_system_info.txt"
-        dst_file = "%s/2_system_info.txt" % new_path
-        shutil.copyfile(kd, dst_file)
+            kd = "boardtester/test/known_results/"
+            kd += "%s/%s_system_info.txt" % (item, item)
+            dst_file = "%s/%s_system_info.txt" % (new_path, item)
+            shutil.copyfile(kd, dst_file)
 
-        kd = "boardtester/test/known_results/2/exam_log.txt"
-        dst_file = "%s/exam_log.txt" % new_path
-        shutil.copyfile(kd, dst_file)
-
-        
-        new_path = "%s/3/" % self.node_root
-        os.makedirs(new_path)
-        kd = "boardtester/test/known_results/3/3_system_info.txt"
-        dst_file = "%s/3_system_info.txt" % new_path
-        shutil.copyfile(kd, dst_file)
-
-        kd = "boardtester/test/known_results/3/exam_log.txt"
-        dst_file = "%s/exam_log.txt" % new_path
-        shutil.copyfile(kd, dst_file)
-
-        
-        new_path = "%s/10/" % self.node_root
-        os.makedirs(new_path)
-        kd = "boardtester/test/known_results/10/10_system_info.txt"
-        dst_file = "%s/10_system_info.txt" % new_path
-        shutil.copyfile(kd, dst_file)
-
-        kd = "boardtester/test/known_results/10/exam_log.txt"
-        dst_file = "%s/exam_log.txt" % new_path
-        shutil.copyfile(kd, dst_file)
-
+            kd = "boardtester/test/known_results/"
+            kd += "%s/exam_log.txt" % item
+            dst_file = "%s/exam_log.txt" % new_path
+            shutil.copyfile(kd, dst_file)
 
     def test_average_entire_line_value_trend(self):
         # Make sure test node is clear
@@ -221,6 +193,12 @@ class Test(unittest.TestCase):
         result = proc.process_in_order(self.node_root)
 
         # Get the average value of entire line
+        # Total data points should match total 'pass' line count
+        pass_line_count = result["pass"]
+        total_avgs = 0
+        for item in result["line_averages"]:
+            total_avgs += len(item)
+        self.assertEqual(total_avgs, pass_line_count)
 
         # Plot on a qt graph
 

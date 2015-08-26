@@ -18,6 +18,7 @@ using testfixtures.LogCapture
 import os
 import sys    
 import time
+import numpy
 import natsort
 import argparse
 import colorama
@@ -133,13 +134,17 @@ class ProcessBroaster(object):
        
         results = {"fail": 0,
                    "pass": 0,
-                   "pixel_data": range(2048)
+                   "pixel_data": range(2048),
+                   "line_average": []
                   }
 
         for item in by_group:
             if "Pixel Start:" in item:
                 results["pass"] += 1
                 pix_data = self.get_pixel_data(item)
+           
+                line_avg = self.make_average(pix_data)     
+                results["line_average"].append(line_avg)
 
                 position = 0
                 for pix in pix_data:
@@ -164,9 +169,19 @@ class ProcessBroaster(object):
       
         all_pixel_avg = total_avg / (results["pass"] * 2048)
         results["entire_pixel_average"] = all_pixel_avg
-        print "Entire average is: %s" % results["entire_pixel_average"]
+        #print "Entire average is: %s" % results["entire_pixel_average"]
  
         return results
+
+    def make_average(self, pixel_data):
+        """ Given a list of string data, convert to floats, return
+        average.
+        """
+        sum_val = 0.0
+        for item in pixel_data:
+            sum_val += float(item)
+
+        return sum_val / len(pixel_data)
 
     def get_pixel_data(self, in_str):
         """ Given a line of space delimted pixel data in a string,
@@ -215,7 +230,25 @@ class ProcessBroaster(object):
 
         all_files = self.list_all_log_files(node_name)
         all_files = natsort.natsorted(all_files, key=lambda y: y.lower())
-        print "nsort: %s" % all_files
+        #print "nsort: %s" % all_files
+
+        dres = {"fail": 0,
+                   "pass": 0,
+                   "line_averages": []
+                  }
+
+        for pixel_file in all_files:
+            #print "Processing file: %s" % pixel_file
+            single_res = self.process_mti_log(pixel_file)
+            dres["fail"] += single_res["fail"]
+            dres["pass"] += single_res["pass"]
+
+            #print "That full avg: %s" % single_res["line_average"]
+            dres["line_averages"].append(single_res["line_average"])
+
+        dres["total"] = dres["fail"] + dres["pass"]
+
+        return dres
 
 
 class WasatchBroaster_Exam(object):
