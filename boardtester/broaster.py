@@ -130,15 +130,55 @@ class ProcessBroaster(object):
 
         by_group = all_lines.split("Turn on relay,")
        
-        good_data = 0 
-        bad_data = 0 
+        results = {"fail": 0,
+                   "pass": 0,
+                   "pixel_data": range(2048)
+                  }
+
         for item in by_group:
             if "Pixel Start:" in item:
-                good_data += 1
+                results["pass"] += 1
+                pix_data = self.get_pixel_data(item)
+
+                position = 0
+                for pix in pix_data:
+                    results["pixel_data"][position] += int(pix)
+                    position += 1
+                
             elif "Error grabbing line" in item:
-                bad_data += 1
-    
-        return bad_data, good_data
+                results["fail"] += 1
+
+       
+        position = 0         
+        total_avg = 0
+        for pix in pix_data:
+            sum_val = results["pixel_data"][position] 
+            total_avg += sum_val
+
+            results["pixel_data"][position] = sum_val / results["pass"]
+            #print "set avg pixel at %s to %s" \
+                #% (position, results["pixel_data"][position])
+
+            position += 1
+      
+ 
+
+        all_pixel_avg = total_avg / (results["pass"] * 2048)
+        results["entire_pixel_average"] = all_pixel_avg
+ 
+        return results
+
+    def get_pixel_data(self, in_str):
+        """ Given a line of space delimted pixel data in a string,
+        return a list of values.
+        """
+
+        pixel_line = in_str.split('Pixel Start:  ')[1]
+        pixels = pixel_line.split(', ')
+        #print "Pixels %s" % pixels[0:2048]
+
+        return pixels[0:2048]
+
 
     def process_mti_group(self, node_name):
         """ Assumes all exam results in the directory are the same
@@ -149,20 +189,28 @@ class ProcessBroaster(object):
 
         all_files = self.list_all_log_files(node_name)
 
-        results = {"Fail": 0,
-                   "Pass": 0
+        results = {"fail": 0,
+                   "pass": 0
                   }
 
         for pixel_file in all_files:
             print "Processing file: %s" % pixel_file
-            res_fail, res_pass = self.process_mti_log(pixel_file)
-            results["Fail"] += res_fail
-            results["Pass"] += res_pass
-            
+            single_res = self.process_mti_log(pixel_file)
+            results["fail"] += single_res["fail"]
+            results["pass"] += single_res["pass"]
+            #self.sum_pixel_data(results)
+
+        results["total"] = results["fail"] + results["pass"]
+
+        frate = (100.0 * results["fail"]) / results["total"]
+        results["failure_rate"] = frate
+     
+                
         results["overall_result"] = "%s Fail, %s Pass" \
-            % (results["Fail"], results["Pass"])
+            % (results["fail"], results["pass"])
 
         return results
+
 
 class WasatchBroaster_Exam(object):
     """ Power cycle devices, store results in automatically created log

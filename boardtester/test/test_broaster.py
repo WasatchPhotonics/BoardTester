@@ -135,10 +135,13 @@ class Test(unittest.TestCase):
         exam_description = "MTI 2048 pixels, 100 group 1"
         filename = proc.find_log(exam_description) 
 
-        res_fail, res_pass = proc.process_mti_log(filename)
+        results = proc.process_mti_log(filename)
 
-        self.assertEqual(res_fail, 3)
-        self.assertEqual(res_pass, 97)
+        self.assertEqual(results["fail"], 3)
+        self.assertEqual(results["pass"], 97)
+
+        self.assertLess(results["entire_pixel_average"], 30000)
+        self.assertGreater(results["entire_pixel_average"], 28000)
 
     def test_combined_process_mti_log(self):
         # Make sure test node is clear
@@ -151,7 +154,10 @@ class Test(unittest.TestCase):
 
         # Process as a group, summarize results in dict form
         result = proc.process_mti_group(self.node_root)
-        self.assertEqual(result['overall_result'], "23 Fail, 277 Pass")
+        self.assertEqual(result["overall_result"], "23 Fail, 277 Pass")
+
+        self.assertLess(result["failure_rate"], 7.7)
+        self.assertGreater(result["failure_rate"], 7.6)
 
 
 
