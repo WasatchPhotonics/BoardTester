@@ -214,16 +214,9 @@ class ProcessBroaster(object):
         """
 
         all_files = self.list_all_log_files(node_name)
-        all_files.sort()
+        all_files = natsort.natsorted(all_files, key=lambda y: y.lower())
+        print "nsort: %s" % all_files
 
-        print "Files: %s" % all_files
-        nsort = natsort.natsorted(all_files, key=lambda y: y.lower())
-        print "nsort: %s" % nsort
-
- #import natsort
-#>>> x = ['Elm11', 'Elm12', 'Elm2', 'elm0', 'elm1', 'elm10', 'elm13',
-#>>> 'elm9']
-#>>> natsort.natsorted(x, key=lambda y: y.lower())
 
 class WasatchBroaster_Exam(object):
     """ Power cycle devices, store results in automatically created log
