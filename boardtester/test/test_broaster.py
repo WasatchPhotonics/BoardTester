@@ -196,6 +196,43 @@ class Test(unittest.TestCase):
         dst_file = "%s/exam_log.txt" % new_path
         shutil.copyfile(kd, dst_file)
 
+        
+        new_path = "%s/10/" % self.node_root
+        os.makedirs(new_path)
+        kd = "boardtester/test/known_results/10/10_system_info.txt"
+        dst_file = "%s/10_system_info.txt" % new_path
+        shutil.copyfile(kd, dst_file)
+
+        kd = "boardtester/test/known_results/10/exam_log.txt"
+        dst_file = "%s/exam_log.txt" % new_path
+        shutil.copyfile(kd, dst_file)
+
+
+    def test_average_entire_line_value_trend(self):
+        # Make sure test node is clear
+        result = os.path.exists(self.node_root)
+        self.assertFalse(result)
+
+        # Add in a group of known test results
+        self.add_known_group()
+        proc = broaster.ProcessBroaster()
+
+        # Read the files in order
+        result = proc.process_in_order(self.node_root)
+
+        # Get the average value of entire line
+
+        # Plot on a qt graph
+
+        # Get the first and last entries from the graph, make sure they
+        # match the raw python list data
+
+#all of the pixel line values, then build a series of graphs, second one
+#is an average of all values of each pixel. 
+#Third uses pyqtgraph waterfal to
+#create a style of heat map. 
+#Just get the data in guiqwt for now and
+#manually edit the display parameters for visualization.   
 
 if __name__ == "__main__":
     unittest.main()

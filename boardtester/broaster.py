@@ -18,6 +18,7 @@ using testfixtures.LogCapture
 import os
 import sys    
 import time
+import natsort
 import argparse
 import colorama
 from colorama import init, Fore, Back, Style
@@ -197,19 +198,32 @@ class ProcessBroaster(object):
             single_res = self.process_mti_log(pixel_file)
             results["fail"] += single_res["fail"]
             results["pass"] += single_res["pass"]
-            #self.sum_pixel_data(results)
 
         results["total"] = results["fail"] + results["pass"]
 
         frate = (100.0 * results["fail"]) / results["total"]
         results["failure_rate"] = frate
-     
                 
         results["overall_result"] = "%s Fail, %s Pass" \
             % (results["fail"], results["pass"])
 
         return results
 
+    def process_in_order(self, node_name):
+        """ List the files in numeric order, then process
+        """
+
+        all_files = self.list_all_log_files(node_name)
+        all_files.sort()
+
+        print "Files: %s" % all_files
+        nsort = natsort.natsorted(all_files, key=lambda y: y.lower())
+        print "nsort: %s" % nsort
+
+ #import natsort
+#>>> x = ['Elm11', 'Elm12', 'Elm2', 'elm0', 'elm1', 'elm10', 'elm13',
+#>>> 'elm9']
+#>>> natsort.natsorted(x, key=lambda y: y.lower())
 
 class WasatchBroaster_Exam(object):
     """ Power cycle devices, store results in automatically created log
