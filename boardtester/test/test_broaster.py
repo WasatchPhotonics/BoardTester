@@ -19,6 +19,7 @@ import shutil
 import numpy
 
 from boardtester import broaster
+from boardtester import visualize
 
 class Test(unittest.TestCase):
 
@@ -196,14 +197,31 @@ class Test(unittest.TestCase):
         # Total data points should match total 'pass' line count
         pass_line_count = result["pass"]
         total_avgs = 0
+        full_data = []
         for item in result["line_averages"]:
             total_avgs += len(item)
+            full_data.extend(item)
+
         self.assertEqual(total_avgs, pass_line_count)
 
         # Plot on a qt graph
+        from PyQt4 import QtGui, QtTest
+        self.app = QtGui.QApplication(sys.argv)
+        self.form = visualize.SimpleLineGraph()
+
+        gwid = self.form.mainCurveDialog
+        QtTest.QTest.qWaitForWindowShown(self.form) 
+
+        # Render the graph
+        self.form.render_graph(full_data)
 
         # Get the first and last entries from the graph, make sure they
         # match the raw python list data
+        x_data, y_data = self.form.curve.get_data()
+
+        QtTest.QTest.qWait(3500)
+        self.assertEqual(y_data[0], full_data[0])
+        self.assertEqual(y_data[-1], full_data[-1])
 
 #all of the pixel line values, then build a series of graphs, second one
 #is an average of all values of each pixel. 
