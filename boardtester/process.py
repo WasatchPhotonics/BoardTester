@@ -7,6 +7,7 @@ Prints a summary of useful information about failure rates as recorded
 by the broaster.
 """
 
+import sys
 import argparse
 
 from broaster import BroasterUtils
@@ -26,6 +27,10 @@ if __name__ == "__main__":
     proc = ProcessBroaster()
 
     if args.description == "summarize":
+        if args.node is None:
+            print "Node name required! Example: -n \"exam_results/kali\""
+            sys.exit(1)
+
         result = proc.process_mti_group(args.node)
         print "result is: %s" % result
         

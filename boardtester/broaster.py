@@ -161,10 +161,9 @@ class ProcessBroaster(object):
 
             position += 1
       
- 
-
         all_pixel_avg = total_avg / (results["pass"] * 2048)
         results["entire_pixel_average"] = all_pixel_avg
+        print "Entire average is: %s" % results["entire_pixel_average"]
  
         return results
 
