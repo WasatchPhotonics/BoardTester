@@ -39,8 +39,6 @@ class ProcessBroaster(object):
         """ Look through each exam log entry, and return the full exam
         log if the description is found in the file.
         """
-
-
         # Check for root directory
         if not os.path.exists(self._exam_root):
             print "Exam root: %s does not exist"
@@ -50,7 +48,6 @@ class ProcessBroaster(object):
         # directories, and look for the description text in the system
         # info file
 
-        list_of_files = {}
         for (dirpath, dirnames, filenames) in os.walk(self._exam_root):
             for dirname in dirnames:
                 full_path = "%s/%s" % (dirpath, dirname)
@@ -60,6 +57,43 @@ class ProcessBroaster(object):
                     return name
 
         return "not found"
+
+    def list_all_log_files(self, node_path):
+        """ No matching, no verification, simply return a list of all
+        exam_log filenames in the exam_results directory.
+        """
+
+
+        # Check for root + node_name
+        if not os.path.exists(node_path):
+            print "Node path: %s does not exist" % node_path
+            return "invalid node path"
+
+        print "walk node_path: %s" % node_path
+        list_of_files = []
+        for (dirpath, dirnames, filenames) in os.walk(node_path):
+            for dirname in dirnames:
+                chk_file = "%s/%s/exam_log.txt" % (dirpath, dirname)
+                print "filename: %s" % chk_file
+                if os.path.exists(chk_file):
+                    list_of_files.append(chk_file)
+                    print "File: %s " % chk_file
+
+        return list_of_files
+
+    def find_exam_log(self, full_path):
+        """ Look in each subdir for the exam_log.txt file.
+        """
+        for (dirpath, dirnames, filenames) in os.walk(full_path):
+            for dirname in dirnames:
+
+                log_filename = "%s/%s/" % (full_path, dirname)
+                log_filename += "exam_log.txt"
+                if os.path.exists(log_filename):
+                    return True, log_filename
+
+        return False, "not found"
+        
    
     def check_sub(self, full_path, description):
         """ Look at the exam info file in the specified directory,
@@ -100,6 +134,53 @@ class ProcessBroaster(object):
 
         summ_str = "%s Fail, %s Pass" % (fail_count, pass_count)
         return summ_str
+
+    def process_mti_log(self, filename):
+        """ Read the entire file, group by relay split, then look for
+        pass/fail criteria.
+        """
+        # Slurp the entire file, break down by relay split
+        log_file = open(filename)
+
+        all_lines = ""
+        for line in log_file.readlines():
+            all_lines += line
+
+        by_group = all_lines.split("Turn on relay,")
+       
+        good_data = 0 
+        bad_data = 0 
+        for item in by_group:
+            if "Pixel Start:" in item:
+                good_data += 1
+            elif "Error grabbing line" in item:
+                bad_data += 1
+    
+        return bad_data, good_data
+
+    def process_mti_group(self, node_name):
+        """ Assumes all exam results in the directory are the same
+        format, and groups the results. Returns a dict of the various 
+        processing types.
+        """
+        line_count = 0
+
+        all_files = self.list_all_log_files(node_name)
+
+        results = {"Fail": 0,
+                   "Pass": 0
+                  }
+
+        for pixel_file in all_files:
+            print "Processing file: %s" % pixel_file
+            res_fail, res_pass = self.process_mti_log(pixel_file)
+            results["Fail"] += res_fail
+            results["Pass"] += res_pass
+            
+        results["overall_result"] = "%s Fail, %s Pass" \
+            % (results["Fail"], results["Pass"])
+
+        return results
 
 class WasatchBroaster_Exam(object):
     """ Power cycle devices, store results in automatically created log

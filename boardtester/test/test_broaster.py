@@ -118,34 +118,77 @@ class Test(unittest.TestCase):
         result = self.proc.process_log(filename)
         self.assertEqual(result, "36 Fail, 32 Pass")
 
-    def test_combined_log_average_trend(self):
-        # Given a combined log file, extract pixel data, create a
-        # per-line of data average, render as line graph
-        fname = "docs/example_combined_log.txt"
-        pixel_file = open(fname)
+    def test_single_process_mti_log(self):
+        # Create a known exam log, look for acquire failures
+        proc = broaster.ProcessBroaster()
+        new_path = "%s/1/" % self.node_root
+        os.makedirs(new_path)
+        
+        kd = "boardtester/test/known_results/1/1_system_info.txt"
+        dst_file = "%s/1_system_info.txt" % new_path
+        shutil.copyfile(kd, dst_file)
 
-        #line = pixel_file.readlines()[0]
-            
-        all_avg = numpy.linspace(0, 0, 2048)
-        line_count = 0
+        kd = "boardtester/test/known_results/1/exam_log.txt"
+        dst_file = "%s/exam_log.txt" % new_path
+        shutil.copyfile(kd, dst_file)
 
-        for line in pixel_file.readlines():
+        exam_description = "MTI 2048 pixels, 100 group 1"
+        filename = proc.find_log(exam_description) 
 
-            #print "Line: %s" % line 
-            pixels = line.split(',')
-            first_pixel = pixels[0]
-            first_pixel = first_pixel.split(' ')[-1]
-            #print "0: %s" % first_pixel
-    
-            for item in range(1, len(pixels)-1):
-                #print "%s: %s" % (item, pixels[item])
-                all_avg[item] += float(pixels[item])
+        res_fail, res_pass = proc.process_mti_log(filename)
 
-            line_count += 1
+        self.assertEqual(res_fail, 3)
+        self.assertEqual(res_pass, 97)
 
-        for item in range(len(all_avg)):
-            avg_val = all_avg[item] / line_count
-            print "Average for pixel %s is %s" % (item, avg_val)
+    def test_combined_process_mti_log(self):
+        # Make sure test node is clear
+        result = os.path.exists(self.node_root)
+        self.assertFalse(result)
+
+        # Add in a group of known test results
+        self.add_known_group()
+        proc = broaster.ProcessBroaster()
+
+        # Process as a group, summarize results in dict form
+        result = proc.process_mti_group(self.node_root)
+        self.assertEqual(result['overall_result'], "23 Fail, 277 Pass")
+
+
+
+    def add_known_group(self):
+        # Copy a group of known test results to the testing node
+        # directory
+        new_path = "%s/1/" % self.node_root
+        os.makedirs(new_path)
+        kd = "boardtester/test/known_results/1/1_system_info.txt"
+        dst_file = "%s/1_system_info.txt" % new_path
+        shutil.copyfile(kd, dst_file)
+
+        kd = "boardtester/test/known_results/1/exam_log.txt"
+        dst_file = "%s/exam_log.txt" % new_path
+        shutil.copyfile(kd, dst_file)
+
+        
+        new_path = "%s/2/" % self.node_root
+        os.makedirs(new_path)
+        kd = "boardtester/test/known_results/2/2_system_info.txt"
+        dst_file = "%s/2_system_info.txt" % new_path
+        shutil.copyfile(kd, dst_file)
+
+        kd = "boardtester/test/known_results/2/exam_log.txt"
+        dst_file = "%s/exam_log.txt" % new_path
+        shutil.copyfile(kd, dst_file)
+
+        
+        new_path = "%s/3/" % self.node_root
+        os.makedirs(new_path)
+        kd = "boardtester/test/known_results/3/3_system_info.txt"
+        dst_file = "%s/3_system_info.txt" % new_path
+        shutil.copyfile(kd, dst_file)
+
+        kd = "boardtester/test/known_results/3/exam_log.txt"
+        dst_file = "%s/exam_log.txt" % new_path
+        shutil.copyfile(kd, dst_file)
 
 
 if __name__ == "__main__":

@@ -17,3 +17,9 @@ camids
 
 
 ![camids screenshot](/docs/camids.png "camids screenshot")
+
+
+process
+
+    Process the results. Create text and graphical summaries of test
+    results from the broaster or camids.
