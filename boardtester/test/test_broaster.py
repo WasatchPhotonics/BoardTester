@@ -219,7 +219,7 @@ class Test(unittest.TestCase):
         # match the raw python list data
         x_data, y_data = self.form.curve.get_data()
 
-        QtTest.QTest.qWait(3500)
+        QtTest.QTest.qWait(33500)
         self.assertEqual(y_data[0], full_data[0])
         self.assertEqual(y_data[-1], full_data[-1])
 
