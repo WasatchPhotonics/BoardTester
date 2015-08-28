@@ -153,6 +153,7 @@ class ProcessBroaster(object):
                 
             elif "Error grabbing line" in item:
                 results["fail"] += 1
+                results["line_average"].append(0)
 
        
         position = 0         
@@ -170,6 +171,7 @@ class ProcessBroaster(object):
         all_pixel_avg = total_avg / (results["pass"] * 2048)
         results["entire_pixel_average"] = all_pixel_avg
         #print "Entire average is: %s" % results["entire_pixel_average"]
+
  
         return results
 
@@ -234,7 +236,8 @@ class ProcessBroaster(object):
 
         dres = {"fail": 0,
                    "pass": 0,
-                   "line_averages": []
+                   "line_averages": [],
+                   "total_line_averages": []
                   }
 
         for pixel_file in all_files:
@@ -247,6 +250,13 @@ class ProcessBroaster(object):
             dres["line_averages"].append(single_res["line_average"])
 
         dres["total"] = dres["fail"] + dres["pass"]
+
+        # Now iterate through all line_averages, and make one large data
+        # set that is all line averages
+        full_data = []
+        for item in dres["line_averages"]:
+            full_data.extend(item)
+        dres["total_line_averages"] = full_data
 
         return dres
 

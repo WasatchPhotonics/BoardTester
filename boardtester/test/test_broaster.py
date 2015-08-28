@@ -17,6 +17,8 @@ import sys
 import os
 import shutil
 import numpy
+        
+from PyQt4 import QtGui, QtTest
 
 from boardtester import broaster
 from boardtester import visualize
@@ -193,24 +195,47 @@ class Test(unittest.TestCase):
         # Read the files in order
         result = proc.process_in_order(self.node_root)
 
-        # Get the average value of entire line
         # Total data points should match total 'pass' line count
         pass_line_count = result["pass"]
-        total_avgs = 0
+        total_num_averages = len(result["total_line_averages"])
+        self.assertEqual(total_num_averages, pass_line_count)
+
+        # Make sure the first and last entries of data match expected
+        # values
+        first_item = result["total_line_averages"][0]
+        last_item = result["total_line_averages"][-1]
+        self.assertGreater(first_item, 28725)
+        self.assertLess(first_item, 28726)
+        self.assertGreater(last_item, 28801)
+        self.assertLess(last_item, 28802)
+
+    def test_average_entire_line_visualization(self):
+        # Re-use the computation code, and make sure the render is
+        # functional
+        result = os.path.exists(self.node_root)
+        self.assertFalse(result)
+
+        # Add in a group of known test results
+        self.add_known_group()
+        proc = broaster.ProcessBroaster()
+
+        # Read the files in order
+        result = proc.process_in_order(self.node_root)
+
+        # Get the average value of entire line
+        # Total data points should match total 'pass' line count
         full_data = []
         for item in result["line_averages"]:
-            total_avgs += len(item)
             full_data.extend(item)
 
-        self.assertEqual(total_avgs, pass_line_count)
-
         # Plot on a qt graph
-        from PyQt4 import QtGui, QtTest
         self.app = QtGui.QApplication(sys.argv)
         self.form = visualize.SimpleLineGraph()
 
         gwid = self.form.mainCurveDialog
         QtTest.QTest.qWaitForWindowShown(self.form) 
+        self.assertEqual(self.form.width(), 800)
+        self.assertEqual(self.form.height(), 300)
 
         # Render the graph
         self.form.render_graph(full_data)
@@ -219,9 +244,58 @@ class Test(unittest.TestCase):
         # match the raw python list data
         x_data, y_data = self.form.curve.get_data()
 
-        QtTest.QTest.qWait(33500)
         self.assertEqual(y_data[0], full_data[0])
         self.assertEqual(y_data[-1], full_data[-1])
+
+        QtTest.QTest.qWait(10000)
+
+    def test_point_visualization(self):
+        # Use the data generated above, and render with points instead
+        # of a line
+        result = os.path.exists(self.node_root)
+        self.assertFalse(result)
+
+        # Add in a group of known test results
+        self.add_known_group()
+        proc = broaster.ProcessBroaster()
+
+        # Read the files in order
+        result = proc.process_in_order(self.node_root)
+
+        # Plot on a qt graph
+        self.app = QtGui.QApplication(sys.argv)
+        self.form = visualize.SimpleLineGraph()
+
+        # Render the graph
+        self.form.render_point_graph(result["total_line_averages"])
+        QtTest.QTest.qWait(13000)
+
+    def test_overlay_visualization(self):
+        # Use the data generated above, and render with a line that is
+        # all data. Where the averages report a zero for no data,
+        # instead print the previous entry. The inverse happens on the
+        # second pass. A new line is created where every zero point is a
+        # line with no pen, and a marker. Then set the axis to min + max
+        # of actual non-zero data plus a margin. That way it shows the
+        # 900+ out of 1000 with data, and the 33-ish entries that were
+        # the device not booting up also show
+        result = os.path.exists(self.node_root)
+        self.assertFalse(result)
+
+        # Add in a group of known test results
+        self.add_known_group()
+        proc = broaster.ProcessBroaster()
+
+        # Read the files in order
+        result = proc.process_in_order(self.node_root)
+
+        # Plot on a qt graph
+        self.app = QtGui.QApplication(sys.argv)
+        self.form = visualize.SimpleLineGraph()
+
+        # Render the graph
+        self.form.render_combined_graph(result["total_line_averages"])
+        QtTest.QTest.qWait(13000)
 
 #all of the pixel line values, then build a series of graphs, second one
 #is an average of all values of each pixel. 
@@ -229,6 +303,7 @@ class Test(unittest.TestCase):
 #create a style of heat map. 
 #Just get the data in guiqwt for now and
 #manually edit the display parameters for visualization.   
+# A test that shows a fitted curve over the average of each line curve
 
 if __name__ == "__main__":
     unittest.main()
