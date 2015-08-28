@@ -15,7 +15,52 @@ from PyQt4 import QtGui, QtCore, QtSvg
 
 from boardtester import broaster
 
+class SimpleHeatMap(QtGui.QWidget):
+    """ Wrappers for creating guiqwt heatmaps from numpy data.
+    """
+    def __init__(self):
+        super(SimpleHeatMap, self).__init__()
+        self.setupUI()
+        self.show()
+
+    def setupUI(self):
+        """ Place an guiqwt imagedialog on the widget.
+        """
+        self.mainImageDialog = plot.ImageDialog(toolbar=True, edit=True,
+            wintitle="Image Dialog")
+
+        self.plot = self.mainImageDialog.get_plot()
+    
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(self.mainImageDialog)
+        self.setLayout(vbox)
+        self.setGeometry(100, 100, 800, 800)
+       
+    def render_image(self, data_list):
+        """ With a two dimensional data set, create and imageitem and
+        add it to the image widget.
+        """ 
+        bmi = builder.make.image
+        self.image = bmi(data_list)
+        self.plot.add_item(self.image)
+        self.plot.do_autoscale()
+
+    def total_pixels(self):
+        """ Show the heatmap of all pixel values
+        """
+        proc = broaster.ProcessBroaster()
+        self.node_root = "exam_results/kali"
+        result = proc.collate_pixels(self.node_root)
+        data = numpy.array(result["all_data"]).astype(float)
+        
+        self.render_image(data)
+        
+        
 class SimpleLineGraph(QtGui.QWidget):
+    """ Various wrappers and helper functions for generating single line
+    curves, multiple curves with gap data, and point coverage graphs
+    from the same data source.
+    """
     def __init__(self):
         super(SimpleLineGraph, self).__init__()
 
@@ -114,19 +159,23 @@ class SimpleLineGraph(QtGui.QWidget):
 
         #self.node_root = "exam_results/test_example_node"
         self.node_root = "exam_results/kali"
-        result = proc.process_in_order(self.node_root)
 
-        # Total data points should match total 'pass' line count
-        #self.render_graph(result["total_line_averages"])
-        #self.render_point_graph(result["total_line_averages"])
-        #self.render_gaps(result["total_line_averages"])
+        # Average value of entire line over every exam, showing gaps for
+        # missing data/bad power ons
+        result = proc.process_in_order(self.node_root)
         self.render_gaps(result["total_line_averages"])
 
+        # Average value of each pixel over every exam
         #result = proc.process_in_order_get_pixels(self.node_root)
         #self.render_gaps(result["average_pixels"])
-        
+            
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
+
     grp = SimpleLineGraph()
     grp.total_averages()
+
+    #shm = SimpleHeatMap()
+    #shm.total_pixels()
+
     sys.exit(app.exec_())

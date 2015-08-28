@@ -330,6 +330,36 @@ class ProcessBroaster(object):
         by_group = all_lines.split("Turn on relay,")
         return by_group
 
+    def collate_pixels(self, node_name):
+        """ Read all files in natural sort order, create a two
+        dimensional data structure that is the raw pixel data.
+        """
+        all_files = self.list_all_log_files(node_name)
+        all_files = natsort.natsorted(all_files, key=lambda y: y.lower())
+
+        dres = {"all_data": []
+               }
+
+        for pixel_file in all_files:
+            print "Processing file: %s" % pixel_file
+            grp_data = self.process_return_pixels(pixel_file)
+            dres["all_data"].extend(grp_data)
+
+        return dres
+
+    def process_return_pixels(self, filename):
+        """ Get a two dimensional array of all pixel data from the file.
+        """
+        by_group = self.slurp_to_group(filename)
+
+        line_data = []
+        for item in by_group:
+            if "Pixel Start:" in item:
+                pix_data = self.get_pixel_data(item)
+                line_data.append(pix_data)
+ 
+        return line_data
+
 class WasatchBroaster_Exam(object):
     """ Power cycle devices, store results in automatically created log
     files.

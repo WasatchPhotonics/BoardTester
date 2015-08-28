@@ -375,7 +375,28 @@ class Test(unittest.TestCase):
         self.form.render_gaps(result["average_pixels"])
         QtTest.QTest.qWait(13000)
 
-#second one is an average of all values of each pixel. 
+    def test_heatmap_of_pixel_values(self):
+        result = os.path.exists(self.node_root)
+        self.assertFalse(result)
+
+        self.add_known_group(['3'])
+        proc = broaster.ProcessBroaster()
+
+        result = proc.collate_pixels(self.node_root)
+        data = numpy.array(result["all_data"]).astype(float)
+        
+        first_pixel = data[0][0]
+        last_pixel = data[-1][-1]
+
+        self.assertEqual(int(first_pixel), 28818)
+        self.assertEqual(int(last_pixel), 28790)
+
+        self.app = QtGui.QApplication(sys.argv)
+        self.form = visualize.SimpleHeatMap()
+        self.form.render_image(data)
+        QtTest.QTest.qWait(9000)
+
+        
 #Third uses pyqtgraph waterfal to
 #create a style of heat map. 
 #Just get the data in guiqwt for now and
