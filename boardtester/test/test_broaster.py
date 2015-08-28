@@ -279,6 +279,10 @@ class Test(unittest.TestCase):
         # of actual non-zero data plus a margin. That way it shows the
         # 900+ out of 1000 with data, and the 33-ish entries that were
         # the device not booting up also show
+        # 
+        # Hmm.. maybe a better solution is to split on numpy.nan entries
+        # and just render a bunch of curves that have their boundaries
+        # at the 0/nan entries?
         result = os.path.exists(self.node_root)
         self.assertFalse(result)
 

@@ -153,7 +153,7 @@ class ProcessBroaster(object):
                 
             elif "Error grabbing line" in item:
                 results["fail"] += 1
-                results["line_average"].append(0)
+                results["line_average"].append(numpy.nan)
 
        
         position = 0         
