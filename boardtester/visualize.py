@@ -44,6 +44,7 @@ class SimpleHeatMap(QtGui.QWidget):
         self.image = bmi(data_list)
         self.plot.add_item(self.image)
         self.plot.do_autoscale()
+        return True
 
     def total_pixels(self):
         """ Show the heatmap of all pixel values

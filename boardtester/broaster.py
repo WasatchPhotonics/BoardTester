@@ -345,6 +345,8 @@ class ProcessBroaster(object):
             grp_data = self.process_return_pixels(pixel_file)
             dres["all_data"].extend(grp_data)
 
+        data = numpy.array(dres["all_data"]).astype(float)
+        dres["all_data"] = data
         return dres
 
     def process_return_pixels(self, filename):
