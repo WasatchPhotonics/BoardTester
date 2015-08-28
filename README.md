@@ -96,31 +96,32 @@ Fedora Core 22
     tar -zxvf PyQt-x11-gpl-4.11.4.tar.gz
     cd PyQt-x11-gpl-4.11.4/
     python configure.py -q /usr/bin/qmake-qt4
+    type "yes" to accept license
     make -j2
     make install
    
     Verify the installation by viewing the installed version strings: 
-    export DYLD_LIBRARY_PATH=${VIRTUAL_ENV}/lib
     python
     import sip; print sip.SIP_VERSION_STR
     from PyQt4 import QtCore; print QtCore.PYQT_VERSION_STR
 
     Now Install the guiqwt prerequisites
     pip install numpy
-    pip install guidata
     pip install cython
     pip install scipy
     pip install h5py
 
     Spyder older version required version:
-    wget https://bitbucket.org/spyder-ide/spyderlib/downloads/spyder-2.3.5.2.zip
+    wget 'https://bitbucket.org/spyder-ide/spyderlib/downloads/\
+            spyder-2.3.5.2.zip'
     unzip spyder-2.3.5.2.zip
     cd spyder-2.3.5.2/
     python setup.py install
 
 
     PyQwt is required for guiqwt
-    wget http://downloads.sourceforge.net/project/pyqwt/pyqwt5/PyQwt-5.2.0/PyQwt-5.2.0.tar.gz
+    wget 'http://downloads.sourceforge.net/project/pyqwt/pyqwt5/\
+            PyQwt-5.2.0/PyQwt-5.2.0.tar.gz'
     tar -zxvf PyQwt-5.2.0.tar.gz
     cd PyQwt-5.2.0
     cd configure
@@ -140,4 +141,10 @@ Fedora Core 22
     cd guiqwt-2.3.2/
     python setup.py build install
     
-
+    # Now run the guiqwt visualization tests, make sure there are no
+    # 'wiggles' when double clicking the hist2d example. Make sure to
+    # run the commands below NOT in the guiqwt download directory.
+    python
+    from guiqwt import tests
+    tests.run()
+    
