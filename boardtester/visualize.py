@@ -32,10 +32,6 @@ class SimpleLineGraph(QtGui.QWidget):
         self.chart_param.label = "Data"
         self.chart_param.line.color = "Blue"
         
-        self.curve = curve.CurveItem(self.chart_param)
-
-        
-        self.plot.add_item(self.curve)
         #self.plot.set_axis_limits(0, 0, 65535)
         #self.plot.set_axis_limits(2, 0, len(self.x))
         #self.plot.set_axis_title(0, "Intensity (auto)")
@@ -52,7 +48,9 @@ class SimpleLineGraph(QtGui.QWidget):
         refresh the graph.
         """
         x_axis = range(len(data_list))
+        self.curve = curve.CurveItem(self.chart_param)
         self.curve.set_data(x_axis, data_list)
+        self.plot.add_item(self.curve)
         self.plot.do_autoscale()
 
     def render_point_graph(self, data_list):
@@ -73,6 +71,43 @@ class SimpleLineGraph(QtGui.QWidget):
         self.plot.add_item(self.point_curve)
         self.plot.do_autoscale()
 
+    def render_gaps(self, data_list):
+        """ One dimenstional data, where the list has numpy.nan where no
+        data was collected. Create a series of non-continguous graphs
+        from the mixed intensity/nan data.
+        """
+        bmc = builder.make.curve
+
+        orig_position = 0
+                
+        y_axis = []
+        x_axis = []
+
+        while orig_position < len(data_list):
+            curr_value = data_list[orig_position]
+
+            #print "value is data at %s" % curr_value
+            if curr_value != -9999:
+                #print "Adding data at %s" % orig_position
+                y_axis.append(curr_value)
+                x_axis.append(orig_position)
+    
+            else:
+                #print "Found end nan at %s" % curr_value
+                new_curve = bmc(x_axis, y_axis, color="red")
+                self.plot.add_item(new_curve)
+                y_axis = []
+                x_axis = []
+        
+            orig_position += 1
+       
+        # Add the final curve if it contains data
+        if len(x_axis) != 0:
+            new_curve = bmc(x_axis, y_axis, color="red")
+            self.plot.add_item(new_curve)
+ 
+        self.plot.do_autoscale()
+
     def total_averages(self):
         # Add in a group of known test results
         proc = broaster.ProcessBroaster()
@@ -83,7 +118,8 @@ class SimpleLineGraph(QtGui.QWidget):
 
         # Total data points should match total 'pass' line count
         #self.render_graph(result["total_line_averages"])
-        self.render_point_graph(result["total_line_averages"])
+        #self.render_point_graph(result["total_line_averages"])
+        self.render_gaps(result["total_line_averages"])
         
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

@@ -164,10 +164,11 @@ class Test(unittest.TestCase):
 
 
 
-    def add_known_group(self):
+    def add_known_group(self, grp_list=None):
         # Copy a group of known test results to the testing node
         # directory
-        grp_list = ['1', '2', '3']
+        if grp_list is None:
+            grp_list = ['1', '2', '3']
 
         for item in grp_list:
             new_path = "%s/%s/" % (self.node_root, item)
@@ -280,7 +281,7 @@ class Test(unittest.TestCase):
         # 900+ out of 1000 with data, and the 33-ish entries that were
         # the device not booting up also show
         # 
-        # Hmm.. maybe a better solution is to split on numpy.nan entries
+        # Another solution is to split on numpy.nan entries
         # and just render a bunch of curves that have their boundaries
         # at the 0/nan entries?
         result = os.path.exists(self.node_root)
@@ -300,6 +301,36 @@ class Test(unittest.TestCase):
         # Render the graph
         self.form.render_combined_graph(result["total_line_averages"])
         QtTest.QTest.qWait(13000)
+
+    def test_render_with_gaps(self):
+        # Another solution is to split on numpy.nan entries
+        # and just render a bunch of curves that have their boundaries
+        # at the 0/nan entries?
+        result = os.path.exists(self.node_root)
+        self.assertFalse(result)
+
+        # Add in a group of known test results
+        self.add_known_group(['1'])
+        proc = broaster.ProcessBroaster()
+
+        # Read the files in order
+        result = proc.process_in_order(self.node_root)
+
+        # Plot on a qt graph
+        self.app = QtGui.QApplication(sys.argv)
+        self.form = visualize.SimpleLineGraph()
+
+        # Render the graph
+        #print "Does gap: %s" % result["total_line_averages"]
+        self.form.render_gaps(result["total_line_averages"])
+
+        # Group 1 of known results has missing data at positions:
+        # 8, 96, 100
+        # Therefore, there should be 3 curves: 0-7, 9-95, 97-99
+
+        item_list = self.form.plot.get_items()
+        self.assertEquals(len(item_list), 4) # curves + grid
+        QtTest.QTest.qWait(3000)
 
 #all of the pixel line values, then build a series of graphs, second one
 #is an average of all values of each pixel. 
