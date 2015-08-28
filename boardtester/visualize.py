@@ -119,7 +119,11 @@ class SimpleLineGraph(QtGui.QWidget):
         # Total data points should match total 'pass' line count
         #self.render_graph(result["total_line_averages"])
         #self.render_point_graph(result["total_line_averages"])
+        #self.render_gaps(result["total_line_averages"])
         self.render_gaps(result["total_line_averages"])
+
+        #result = proc.process_in_order_get_pixels(self.node_root)
+        #self.render_gaps(result["average_pixels"])
         
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)

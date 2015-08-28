@@ -303,9 +303,6 @@ class Test(unittest.TestCase):
         QtTest.QTest.qWait(13000)
 
     def test_render_with_gaps(self):
-        # Another solution is to split on numpy.nan entries
-        # and just render a bunch of curves that have their boundaries
-        # at the 0/nan entries?
         result = os.path.exists(self.node_root)
         self.assertFalse(result)
 
@@ -332,8 +329,53 @@ class Test(unittest.TestCase):
         self.assertEquals(len(item_list), 4) # curves + grid
         QtTest.QTest.qWait(3000)
 
-#all of the pixel line values, then build a series of graphs, second one
-#is an average of all values of each pixel. 
+    def test_render_average_of_each_pixel(self):
+        result = os.path.exists(self.node_root)
+        self.assertFalse(result)
+
+        self.add_known_group(['1'])
+        proc = broaster.ProcessBroaster()
+
+        result = proc.process_in_order_get_pixels(self.node_root)
+
+        self.app = QtGui.QApplication(sys.argv)
+        self.form = visualize.SimpleLineGraph()
+
+        # stored_average divisor needs to match the total number of
+        # "pass" entries
+        pass_line_count = result["pass"]
+        avg_divisor = result["average_divisor"]
+        self.assertEqual(pass_line_count, avg_divisor)
+
+        avg_pix_zero = result["average_pixels"][0]
+        avg_pix_2047 = result["average_pixels"][2047]
+
+        # Make sure the first and last entries of data match expected
+        # values
+        self.assertGreater(avg_pix_zero, 28750)
+        self.assertLess(avg_pix_zero, 28752)
+        self.assertGreater(avg_pix_2047, 28758)
+        self.assertLess(avg_pix_2047, 28760)
+
+        self.form.render_gaps(result["average_pixels"])
+        QtTest.QTest.qWait(3000)
+
+    def test_pixel_average_large_group_render(self):
+        result = os.path.exists(self.node_root)
+        self.assertFalse(result)
+
+        self.add_known_group(['3'])
+        proc = broaster.ProcessBroaster()
+
+        result = proc.process_in_order_get_pixels(self.node_root)
+
+        self.app = QtGui.QApplication(sys.argv)
+        self.form = visualize.SimpleLineGraph()
+
+        self.form.render_gaps(result["average_pixels"])
+        QtTest.QTest.qWait(13000)
+
+#second one is an average of all values of each pixel. 
 #Third uses pyqtgraph waterfal to
 #create a style of heat map. 
 #Just get the data in guiqwt for now and

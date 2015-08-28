@@ -171,7 +171,6 @@ class ProcessBroaster(object):
         all_pixel_avg = total_avg / (results["pass"] * 2048)
         results["entire_pixel_average"] = all_pixel_avg
         #print "Entire average is: %s" % results["entire_pixel_average"]
-
  
         return results
 
@@ -232,13 +231,12 @@ class ProcessBroaster(object):
 
         all_files = self.list_all_log_files(node_name)
         all_files = natsort.natsorted(all_files, key=lambda y: y.lower())
-        #print "nsort: %s" % all_files
 
         dres = {"fail": 0,
-                   "pass": 0,
-                   "line_averages": [],
-                   "total_line_averages": []
-                  }
+                "pass": 0,
+                "line_averages": [],
+                "total_line_averages": []
+               }
 
         for pixel_file in all_files:
             #print "Processing file: %s" % pixel_file
@@ -260,6 +258,77 @@ class ProcessBroaster(object):
 
         return dres
 
+    def process_in_order_get_pixels(self, node_name):
+        """ List the files in natural sort order, then create an average
+        value for each pixel on each good read line.
+        With the list data, there is one final output which is the
+        average value for each of the entries across the 2048 pixel
+        range. Pixel 0 is the average of all pixels 0 across each of the 
+        available lines, pixel 100 is the average of all pixel 100s,
+        etc.
+        """
+
+        all_files = self.list_all_log_files(node_name)
+        all_files = natsort.natsorted(all_files, key=lambda y: y.lower())
+
+        dres = {"fail": 0,
+                "pass": 0,
+                "average_divisor": 0,
+                "cumulative_pixels": range(2048),
+                "average_pixels": range(2048)
+               }
+
+        for pixel_file in all_files:
+            print "Processing file: %s" % pixel_file
+            dres = self.process_mti_pixels(pixel_file, dres)
+
+        # Now generate an average of all the cumulative pixel data
+        position = 0         
+        for pix in range(2048):
+            sum_val = dres["cumulative_pixels"][position] 
+
+            new_val = sum_val / dres["average_divisor"]
+            dres["average_pixels"][position] = new_val
+            #print "set avg pixel at %s to %s with divisor %s" \
+                #% (position, results["average_pixels"][position], 
+                   #results["average_divisor"])
+            position += 1
+
+        return dres
+
+    def process_mti_pixels(self, filename, results):
+        """ Read the entire file, group by relay split, if the line is a
+        pass, add the current pixel data to the totals, then take the
+        average.
+        """
+        # Slurp the entire file, break down by relay split
+        by_group = self.slurp_to_group(filename)
+
+        for item in by_group:
+            if "Pixel Start:" in item:
+                results["pass"] += 1
+                results["average_divisor"] += 1
+                pix_data = self.get_pixel_data(item)
+           
+                position = 0
+                for pix in pix_data:
+                    results["cumulative_pixels"][position] += int(pix)
+                    position += 1
+ 
+        return results
+
+    def slurp_to_group(self, filename):
+        """ Read the input file, split into groups by known text
+        strings.
+        """
+        log_file = open(filename)
+
+        all_lines = ""
+        for line in log_file.readlines():
+            all_lines += line
+
+        by_group = all_lines.split("Turn on relay,")
+        return by_group
 
 class WasatchBroaster_Exam(object):
     """ Power cycle devices, store results in automatically created log
