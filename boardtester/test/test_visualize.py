@@ -108,14 +108,17 @@ class Test(unittest.TestCase):
         self.assertIsNotNone(args.testing)
 
 
-    def test_main(self):
+    def test_gui_inhibited_main(self):
+
+        # Run with no args, expect error code
         result = visualize.main()
         self.assertEquals(2, result)
 
-        # This shoudl be test results only
-        argv = ["-n", "exam_results/kali", "-t"]
+        # Run with correct arguments, in test mode, should be no error
+        # code
+        argv = ["unittest exec", "-n", self.node_root, "-t"]
         result = visualize.main(argv)
-        self.assertEquals(0, result)
+        self.assertEquals(3, result)
 
 
  

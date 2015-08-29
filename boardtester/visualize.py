@@ -132,7 +132,8 @@ class VisualizeApplication(object):
         self.parser = self.create_parser()
 
     def parse_args(self, argv):
-        return self.parser.parse_args(argv)
+        self.args = self.parser.parse_args(argv)
+        return self.args
 
     def create_parser(self):
         desc = "guiqwt visualizations of boardtester processing"
@@ -155,15 +156,33 @@ class VisualizeApplication(object):
     def run(self):
         """ Create and execute the application with the input args.
         """
-        app = QtGui.QApplication(sys.argv)
-        proc = broaster.ProcessBroaster()
-        result = proc.process_in_order("exam_results/kali")
+        if self.args.testing:
+            print "In testing mode, do not display, exit"
+            sys.exit(3)
 
-        grp = SimpleLineGraph()
-        grp.render_gaps(result["total_line_averages"])
+        proc = broaster.ProcessBroaster()
+        app = QtGui.QApplication(sys.argv)
+
+        if self.args.graph == "gaps":
+            result = proc.process_in_order("exam_results/kali")
+            graph = SimpleLineGraph()
+            graph.render_gaps(result["total_line_averages"])
+        else:
+            result = proc.collate_pixels("exam_results/kali")
+            graph = SimpleHeatMap()
+            graph.render_image(result["all_data"])
+            
+
         sys.exit(app.exec_())
 
+
+
 def main(argv=None): 
+    """ main calls the wrapper code around the application objects with
+    as little framework as possible. See:
+    https://groups.google.com/d/msg/comp.lang.python/j_tFS3uUFBY/\
+        ciA7xQMe6TMJ
+    """
     
     if argv is None: 
         from sys import argv as sys_argv 
@@ -180,44 +199,9 @@ def main(argv=None):
     except SystemExit, exc:
         exit_code = exc.code
 
-    #exit_code = 0 
-    #try: 
-        #frob_app = FrobApplication() 
-        #frob_app.parse_args(argv) 
-        #frob_app.main() 
-    #except SystemExit, exc: 
-        #exit_code = exc.code 
-    #parser = create_parser()
-    #args = parser.parse_args()
-    #result = proc.process_in_order(args.node)
-
-    #grp = SimpleLineGraph()
-    #grp.render_gaps(result["total_line_averages"])
-
     return exit_code 
 
 if __name__ == '__main__': 
     exit_code = main(sys.argv) 
     sys.exit(exit_code) 
 
-#def main():
-#    parser = create_parser()
-#    args = parser.parse_args()
-#
-#    app = QtGui.QApplication(sys.argv)
-#
-#    if args.graph is None:
-#        proc = broaster.ProcessBroaster()
-#        result = proc.process_in_order(args.node)
-#
-#        grp = SimpleLineGraph()
-#        grp.render_gaps(result["total_line_averages"])
-#
-#    #result = proc.collate_pixels("exam_results/kali")
-#    #shm = SimpleHeatMap()
-#    #shm.render_image(result["all_data"])
-#
-#    sys.exit(app.exec_())
-#
-#if __name__ == "__main__":
-#    main()
