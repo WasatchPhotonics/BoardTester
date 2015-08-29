@@ -20,6 +20,28 @@ class Test(unittest.TestCase):
         result = os.path.exists(self.node_root)
         self.assertFalse(result)
 
+    def add_known_group(self, grp_list=None):
+        """ Helper function to copy a group of known test results to 
+        the testing node directory.
+        """
+        if grp_list is None:
+            grp_list = ["1", "2", "3"]
+
+        for item in grp_list:
+            new_path = "%s/%s/" % (self.node_root, item)
+            os.makedirs(new_path)
+
+            kd = "boardtester/test/known_results/"
+            kd += "%s/%s_system_info.txt" % (item, item)
+            dst_file = "%s/%s_system_info.txt" % (new_path, item)
+            shutil.copyfile(kd, dst_file)
+
+            kd = "boardtester/test/known_results/"
+            kd += "%s/exam_log.txt" % item
+            dst_file = "%s/exam_log.txt" % new_path
+            shutil.copyfile(kd, dst_file)
+
+
     def test_curve_render_continuous(self):
         self.add_known_group(["3"])
         proc = broaster.ProcessBroaster()
@@ -66,28 +88,6 @@ class Test(unittest.TestCase):
         self.form = visualize.SimpleHeatMap()
         result = self.form.render_image(result["all_data"])
         self.assertTrue(result)
-
-
-    def add_known_group(self, grp_list=None):
-        """ Copy a group of known test results to the testing node
-        directory.
-        """
-        if grp_list is None:
-            grp_list = ["1", "2", "3"]
-
-        for item in grp_list:
-            new_path = "%s/%s/" % (self.node_root, item)
-            os.makedirs(new_path)
-
-            kd = "boardtester/test/known_results/"
-            kd += "%s/%s_system_info.txt" % (item, item)
-            dst_file = "%s/%s_system_info.txt" % (new_path, item)
-            shutil.copyfile(kd, dst_file)
-
-            kd = "boardtester/test/known_results/"
-            kd += "%s/exam_log.txt" % item
-            dst_file = "%s/exam_log.txt" % new_path
-            shutil.copyfile(kd, dst_file)
 
 
 if __name__ == "__main__":

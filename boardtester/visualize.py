@@ -46,16 +46,6 @@ class SimpleHeatMap(QtGui.QWidget):
         self.plot.do_autoscale()
         return True
 
-    def total_pixels(self):
-        """ Show the heatmap of all pixel values
-        """
-        proc = broaster.ProcessBroaster()
-        self.node_root = "exam_results/kali"
-        result = proc.collate_pixels(self.node_root)
-        data = numpy.array(result["all_data"]).astype(float)
-        
-        self.render_image(data)
-        
         
 class SimpleLineGraph(QtGui.QWidget):
     """ Various wrappers and helper functions for generating single line
@@ -130,22 +120,6 @@ class SimpleLineGraph(QtGui.QWidget):
         self.plot.do_autoscale()
         return True
 
-    def total_averages(self):
-        # Add in a group of known test results
-        proc = broaster.ProcessBroaster()
-
-        #self.node_root = "exam_results/test_example_node"
-        self.node_root = "exam_results/kali"
-
-        # Average value of entire line over every exam, showing gaps for
-        # missing data/bad power ons
-        result = proc.process_in_order(self.node_root)
-        self.render_gaps(result["total_line_averages"])
-
-        # Average value of each pixel over every exam
-        #result = proc.process_in_order_get_pixels(self.node_root)
-        #self.render_gaps(result["average_pixels"])
-            
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
 
