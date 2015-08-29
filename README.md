@@ -37,4 +37,4 @@ visualize Installation:
     For details on how to install guiqwt in a virtual environment that
     closely matches that provided by python xy 2.7.10, see the file: 
    
-    [a link](https://github.com/nharringtonwasatch/BoardTester/docs/guiqwt_pythonxy_match.md) 
+    https://github.com/nharringtonwasatch/BoardTester/docs/guiqwt_pythonxy_match.md
