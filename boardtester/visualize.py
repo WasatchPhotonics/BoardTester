@@ -18,13 +18,9 @@ from boardtester import broaster
 class SimpleHeatMap(QtGui.QWidget):
     """ Wrappers for creating guiqwt heatmaps from list data.
     """
-    def __init__(self, autoclose=False):
+    def __init__(self):
         super(SimpleHeatMap, self).__init__()
         self.setupUI()
-        if autoclose:
-            self.closeTimer = QtCore.QTimer()
-            self.closeTimer.timeout.connect(self.closeEvent)
-            self.closeTimer.start(2000)
         self.show()
 
     def setupUI(self):
@@ -55,15 +51,10 @@ class SimpleLineGraph(QtGui.QWidget):
     """ Various wrappers and helper functions for generating single line
     curves, and multiple curves with gap data from the same data source.
     """
-    def __init__(self, autoclose=False):
+    def __init__(self):
         super(SimpleLineGraph, self).__init__()
         self.setupUI()
         self.show()
-        if autoclose:
-            self.closeTimer = QtCore.QTimer()
-            self.closeTimer.timeout.connect(self.close)
-            self.closeTimer.start(2000)
-
 
     def setupUI(self):
         """ Use the CurveDialog widget from guiqwt, place on the main
@@ -150,11 +141,14 @@ class VisualizeApplication(object):
         parser.add_argument("-n", "--node", required=True,
             help="Entire node to process of exam results")
     
-        parser.add_argument("-t", "--graph", required=False,
+        parser.add_argument("-g", "--graph", required=False,
             help="Visualization to generate from node data")
 
         parser.add_argument("-c", "--autoclose", required=False,
             help="Shut down the window after a delay")
+        
+        parser.add_argument("-t", "--testing", action="store_true",
+            help="exit code 3 instead of showing the gui, for unittest")
         
         return parser
 
@@ -165,15 +159,19 @@ class VisualizeApplication(object):
         proc = broaster.ProcessBroaster()
         result = proc.process_in_order("exam_results/kali")
 
-        grp = SimpleLineGraph(autoclose=True)
+        grp = SimpleLineGraph()
         grp.render_gaps(result["total_line_averages"])
         sys.exit(app.exec_())
 
 def main(argv=None): 
+    
     if argv is None: 
         from sys import argv as sys_argv 
         argv = sys_argv 
-    
+    else:
+        # Strip out the program name to match the unittest setup
+        argv = argv[1:]
+
     exit_code = 0
     try:
         visapp = VisualizeApplication()
@@ -199,7 +197,7 @@ def main(argv=None):
     return exit_code 
 
 if __name__ == '__main__': 
-    exit_code = __main__(sys.argv) 
+    exit_code = main(sys.argv) 
     sys.exit(exit_code) 
 
 #def main():

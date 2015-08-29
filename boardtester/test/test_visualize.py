@@ -93,22 +93,27 @@ class Test(unittest.TestCase):
         # These tests are based on the this page:
         # http://dustinrcollins.com/testing-python-command-line-apps
         # Now args should fail with system exit
-        visapp = visualize.VisualizeApplication()
+        visapp = visualize.VisualizeApplication() 
         with self.assertRaises(SystemExit):
             visapp.parse_args([])
 
         # Add graph type but no node name, expect failure
         with self.assertRaises(SystemExit):
-            visapp.parse_args(["-t", "heatmap"])
+            visapp.parse_args(["-g", "heatmap"])
 
         args = visapp.parse_args(["-n", "non-existing-node"])
         self.assertIsNotNone(args.node)
+
+        args = visapp.parse_args(["-n", "non-existing-node", "-t"])
+        self.assertIsNotNone(args.testing)
+
 
     def test_main(self):
         result = visualize.main()
         self.assertEquals(2, result)
 
-        argv = ["-n", "exam_results/kali"]
+        # This shoudl be test results only
+        argv = ["-n", "exam_results/kali", "-t"]
         result = visualize.main(argv)
         self.assertEquals(0, result)
 
