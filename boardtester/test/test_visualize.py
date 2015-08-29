@@ -89,6 +89,30 @@ class Test(unittest.TestCase):
         result = self.form.render_image(result["all_data"])
         self.assertTrue(result)
 
+    def test_visualization_command_line_interface(self):
+        # These tests are based on the this page:
+        # http://dustinrcollins.com/testing-python-command-line-apps
+        # Now args should fail with system exit
+        visapp = visualize.VisualizeApplication()
+        with self.assertRaises(SystemExit):
+            visapp.parse_args([])
 
+        # Add graph type but no node name, expect failure
+        with self.assertRaises(SystemExit):
+            visapp.parse_args(["-t", "heatmap"])
+
+        args = visapp.parse_args(["-n", "non-existing-node"])
+        self.assertIsNotNone(args.node)
+
+    def test_main(self):
+        result = visualize.main()
+        self.assertEquals(2, result)
+
+        argv = ["-n", "exam_results/kali"]
+        result = visualize.main(argv)
+        self.assertEquals(0, result)
+
+
+ 
 if __name__ == "__main__":
     unittest.main()

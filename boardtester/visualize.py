@@ -4,6 +4,7 @@ Uses pyqt and guiqwt for fast, configurable graphs.
 """
 
 import sys
+import argparse
 
 from guiqwt import plot
 from guiqwt import styles
@@ -17,9 +18,13 @@ from boardtester import broaster
 class SimpleHeatMap(QtGui.QWidget):
     """ Wrappers for creating guiqwt heatmaps from list data.
     """
-    def __init__(self):
+    def __init__(self, autoclose=False):
         super(SimpleHeatMap, self).__init__()
         self.setupUI()
+        if autoclose:
+            self.closeTimer = QtCore.QTimer()
+            self.closeTimer.timeout.connect(self.closeEvent)
+            self.closeTimer.start(2000)
         self.show()
 
     def setupUI(self):
@@ -50,10 +55,15 @@ class SimpleLineGraph(QtGui.QWidget):
     """ Various wrappers and helper functions for generating single line
     curves, and multiple curves with gap data from the same data source.
     """
-    def __init__(self):
+    def __init__(self, autoclose=False):
         super(SimpleLineGraph, self).__init__()
         self.setupUI()
         self.show()
+        if autoclose:
+            self.closeTimer = QtCore.QTimer()
+            self.closeTimer.timeout.connect(self.close)
+            self.closeTimer.start(2000)
+
 
     def setupUI(self):
         """ Use the CurveDialog widget from guiqwt, place on the main
@@ -121,17 +131,95 @@ class SimpleLineGraph(QtGui.QWidget):
         self.plot.do_autoscale()
         return True
 
-if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+class VisualizeApplication(object):
+    """ Wrapper around application control code based on:
+    https://groups.google.com/d/msg/comp.lang.python/j_tFS3uUFBY/\
+        ciA7xQMe6TMJ
+    """
+    def __init__(self):
+        super(VisualizeApplication, self).__init__()
+        self.parser = self.create_parser()
+
+    def parse_args(self, argv):
+        return self.parser.parse_args(argv)
+
+    def create_parser(self):
+        desc = "guiqwt visualizations of boardtester processing"
+        parser = argparse.ArgumentParser(description=desc)
+    
+        parser.add_argument("-n", "--node", required=True,
+            help="Entire node to process of exam results")
+    
+        parser.add_argument("-t", "--graph", required=False,
+            help="Visualization to generate from node data")
+
+        parser.add_argument("-c", "--autoclose", required=False,
+            help="Shut down the window after a delay")
+        
+        return parser
+
+    def run(self):
+        """ Create and execute the application with the input args.
+        """
+        app = QtGui.QApplication(sys.argv)
+        proc = broaster.ProcessBroaster()
+        result = proc.process_in_order("exam_results/kali")
+
+        grp = SimpleLineGraph(autoclose=True)
+        grp.render_gaps(result["total_line_averages"])
+        sys.exit(app.exec_())
+
+def main(argv=None): 
+    if argv is None: 
+        from sys import argv as sys_argv 
+        argv = sys_argv 
+    
+    exit_code = 0
+    try:
+        visapp = VisualizeApplication()
+        visapp.parse_args(argv)
+        visapp.run()
+    except SystemExit, exc:
+        exit_code = exc.code
+
+    #exit_code = 0 
+    #try: 
+        #frob_app = FrobApplication() 
+        #frob_app.parse_args(argv) 
+        #frob_app.main() 
+    #except SystemExit, exc: 
+        #exit_code = exc.code 
+    #parser = create_parser()
+    #args = parser.parse_args()
+    #result = proc.process_in_order(args.node)
 
     #grp = SimpleLineGraph()
-    #grp.total_averages()
+    #grp.render_gaps(result["total_line_averages"])
 
-        
-    proc = broaster.ProcessBroaster()
-    result = proc.collate_pixels("exam_results/kali")
+    return exit_code 
 
-    shm = SimpleHeatMap()
-    shm.render_image(result["all_data"])
+if __name__ == '__main__': 
+    exit_code = __main__(sys.argv) 
+    sys.exit(exit_code) 
 
-    sys.exit(app.exec_())
+#def main():
+#    parser = create_parser()
+#    args = parser.parse_args()
+#
+#    app = QtGui.QApplication(sys.argv)
+#
+#    if args.graph is None:
+#        proc = broaster.ProcessBroaster()
+#        result = proc.process_in_order(args.node)
+#
+#        grp = SimpleLineGraph()
+#        grp.render_gaps(result["total_line_averages"])
+#
+#    #result = proc.collate_pixels("exam_results/kali")
+#    #shm = SimpleHeatMap()
+#    #shm.render_image(result["all_data"])
+#
+#    sys.exit(app.exec_())
+#
+#if __name__ == "__main__":
+#    main()
