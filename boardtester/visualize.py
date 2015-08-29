@@ -4,7 +4,6 @@ Uses pyqt and guiqwt for fast, configurable graphs.
 """
 
 import sys
-import numpy
 
 from guiqwt import plot
 from guiqwt import styles
@@ -16,7 +15,7 @@ from PyQt4 import QtGui, QtCore, QtSvg
 from boardtester import broaster
 
 class SimpleHeatMap(QtGui.QWidget):
-    """ Wrappers for creating guiqwt heatmaps from numpy data.
+    """ Wrappers for creating guiqwt heatmaps from list data.
     """
     def __init__(self):
         super(SimpleHeatMap, self).__init__()
@@ -24,7 +23,7 @@ class SimpleHeatMap(QtGui.QWidget):
         self.show()
 
     def setupUI(self):
-        """ Place an guiqwt imagedialog on the widget.
+        """ Place a guiqwt imagedialog on the widget.
         """
         self.mainImageDialog = plot.ImageDialog(toolbar=True, edit=True,
             wintitle="Image Dialog")
@@ -49,16 +48,17 @@ class SimpleHeatMap(QtGui.QWidget):
         
 class SimpleLineGraph(QtGui.QWidget):
     """ Various wrappers and helper functions for generating single line
-    curves, multiple curves with gap data, and point coverage graphs
-    from the same data source.
+    curves, and multiple curves with gap data from the same data source.
     """
     def __init__(self):
         super(SimpleLineGraph, self).__init__()
-
         self.setupUI()
         self.show()
 
     def setupUI(self):
+        """ Use the CurveDialog widget from guiqwt, place on the main
+        widget. Set local variables for re-use.
+        """
         self.mainCurveDialog = plot.CurveDialog(toolbar=True,
             edit=True, wintitle="Main Dialog")
 
@@ -75,8 +75,8 @@ class SimpleLineGraph(QtGui.QWidget):
         self.setGeometry(100, 100, 800, 300)
         
     def render_graph(self, data_list):
-        """ With a one dimensional list, update the existing curve,
-        refresh the graph.
+        """ With a one dimensional list, create new curve, add it to the
+        graph, replot the graph.
         """
         x_axis = range(len(data_list))
         self.curve = curve.CurveItem(self.chart_param)
@@ -93,10 +93,11 @@ class SimpleLineGraph(QtGui.QWidget):
         bmc = builder.make.curve
 
         orig_position = 0
-                
         y_axis = []
         x_axis = []
 
+        # Walk through every point in the list, creating new arrays for
+        # curve x axis and intensity, breaking at -9999
         while orig_position < len(data_list):
             curr_value = data_list[orig_position]
 
@@ -123,10 +124,14 @@ class SimpleLineGraph(QtGui.QWidget):
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
 
-    grp = SimpleLineGraph()
-    grp.total_averages()
+    #grp = SimpleLineGraph()
+    #grp.total_averages()
 
-    #shm = SimpleHeatMap()
-    #shm.total_pixels()
+        
+    proc = broaster.ProcessBroaster()
+    result = proc.collate_pixels("exam_results/kali")
+
+    shm = SimpleHeatMap()
+    shm.render_image(result["all_data"])
 
     sys.exit(app.exec_())
