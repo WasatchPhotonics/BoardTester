@@ -113,8 +113,9 @@ class Test(unittest.TestCase):
         self.add_known_group(["3"])
         proc = broaster.ProcessBroaster()
 
-        # Run with no args, expect error code 
         self.app = QtGui.QApplication([])
+
+        # Run with no args, expect error code 
         result = visualize.main()
         self.assertEquals(2, result)
 

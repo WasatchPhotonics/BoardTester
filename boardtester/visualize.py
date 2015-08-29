@@ -126,6 +126,9 @@ class VisualizeApplication(object):
     """ Wrapper around application control code based on:
     https://groups.google.com/d/msg/comp.lang.python/j_tFS3uUFBY/\
         ciA7xQMe6TMJ
+    Specifically, this means breaking out all of the functions from main
+    into this application object so they can have a narrow interface,
+    suitable for unit testing.
     """
     def __init__(self):
         super(VisualizeApplication, self).__init__()
@@ -155,6 +158,12 @@ class VisualizeApplication(object):
         return parser
 
     def run(self):
+        """ Create the Qt application if required, execute the specific
+        processing collation steps for the designated graph mode. Then
+        exit with the app.exec if the unittest has not created the qt 
+        application.
+        """
+
         if not self.args.testing:
             app = QtGui.QApplication(sys.argv)
 
