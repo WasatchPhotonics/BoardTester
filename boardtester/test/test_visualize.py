@@ -107,20 +107,41 @@ class Test(unittest.TestCase):
         args = visapp.parse_args(["-n", "non-existing-node", "-t"])
         self.assertIsNotNone(args.testing)
 
+    def test_with_gui_main(self):
+        # create the qtapp requirements, use the testing flag to
+        # instruct the visualize app not to recreate it
+        self.add_known_group(["3"])
+        proc = broaster.ProcessBroaster()
 
-    def test_gui_inhibited_main(self):
-
-        # Run with no args, expect error code
+        # Run with no args, expect error code 
+        self.app = QtGui.QApplication([])
         result = visualize.main()
         self.assertEquals(2, result)
 
+        # Specify a non-existent graph type, expect error code
+        argv = ["unittest exec", "-n", self.node_root, "-g", "badg"]
+        result = visualize.main()
+        self.assertEquals(2, result)
+        
         # Run with correct arguments, in test mode, should be no error
         # code
         argv = ["unittest exec", "-n", self.node_root, "-t"]
         result = visualize.main(argv)
-        self.assertEquals(3, result)
+        self.assertEquals(0, result)
 
+        # Run with explicitly stated gaps graph type
+        argv = ["unittest exec", "-n", self.node_root, "-t", 
+                "-g", "gaps"
+               ]
+        result = visualize.main(argv)
+        self.assertEquals(0, result)
 
- 
+        # Run with heatmap graph type
+        argv = ["unittest exec", "-n", self.node_root, "-t", 
+                "-g", "heatmap"
+               ]
+        result = visualize.main(argv)
+        self.assertEquals(0, result)
+
 if __name__ == "__main__":
     unittest.main()

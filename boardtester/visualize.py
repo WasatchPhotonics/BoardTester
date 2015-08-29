@@ -143,6 +143,7 @@ class VisualizeApplication(object):
             help="Entire node to process of exam results")
     
         parser.add_argument("-g", "--graph", required=False,
+            default="gaps", choices=["gaps", "heatmap"],
             help="Visualization to generate from node data")
 
         parser.add_argument("-c", "--autoclose", required=False,
@@ -154,28 +155,25 @@ class VisualizeApplication(object):
         return parser
 
     def run(self):
-        """ Create and execute the application with the input args.
-        """
-        if self.args.testing:
-            print "In testing mode, do not display, exit"
-            sys.exit(3)
+        if not self.args.testing:
+            app = QtGui.QApplication(sys.argv)
 
         proc = broaster.ProcessBroaster()
-        app = QtGui.QApplication(sys.argv)
-
+        
         if self.args.graph == "gaps":
-            result = proc.process_in_order("exam_results/kali")
-            graph = SimpleLineGraph()
-            graph.render_gaps(result["total_line_averages"])
-        else:
-            result = proc.collate_pixels("exam_results/kali")
-            graph = SimpleHeatMap()
-            graph.render_image(result["all_data"])
-            
 
-        sys.exit(app.exec_())
+            result = proc.process_in_order(self.args.node)
+            slg = SimpleLineGraph()
+            slg.render_gaps(result["total_line_averages"])
 
+        elif self.args.graph == "heatmap":
 
+            result = proc.collate_pixels(self.args.node)
+            shm = SimpleHeatMap()
+            shm.render_image(result["all_data"])
+
+        if not self.args.testing:
+            sys.exit(app.exec_())
 
 def main(argv=None): 
     """ main calls the wrapper code around the application objects with
