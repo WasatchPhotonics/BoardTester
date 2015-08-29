@@ -69,12 +69,12 @@ class Test(unittest.TestCase):
         self.add_known_group(["3"])
         proc = broaster.ProcessBroaster()
 
-        result = proc.process_in_order_get_pixels(self.node_root)
+        result = proc.process_in_order(self.node_root)
 
         self.app = QtGui.QApplication([])
         self.form = visualize.SimpleLineGraph()
 
-        result = self.form.render_gaps(result["average_pixels"])
+        self.form.render_gaps(result["total_line_averages"])
         self.assertTrue(result)
 
     def test_heatmap_of_pixel_values(self):
