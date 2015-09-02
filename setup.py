@@ -11,8 +11,7 @@ config = {
     "author_email": "nharrington@wasatchphotonics.com",
     "version": "1.0.0",
     "install_requires": ["phidgeter", "wasatchusb", "wpexam",
-                         "colorama", "wmi", "natsort", "cython",
-                        ],
+                         "colorama", "wmi", "natsort", "cython", ],
     "packages": ["boardtester"],
     "scripts": [],
     "name": "BoardTester"
