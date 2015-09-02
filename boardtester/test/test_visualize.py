@@ -144,5 +144,30 @@ class Test(unittest.TestCase):
         result = visualize.main(argv)
         self.assertEquals(0, result)
 
+
+        # Run with gain/offset heatmap graph type
+        argv = ["unittest exec", "-n", self.node_root, "-t", 
+                "-g", "gain"
+               ]
+        result = visualize.main(argv)
+        self.assertEquals(0, result)
+
+
+
+    def test_gain_offset_heatmap(self):
+        # Read a set of csv data that is the Nth entry of the divided
+        # gain/offset scan tests, verify it can be visualized
+
+        proc = broaster.ProcessBroaster()
+
+        csv_filename = "boardtester/test/known_results/" \
+                       + "PRL_Gain_0_255_Offset_128.csv"
+        result = proc.csv_to_pixels(csv_filename)
+        
+        self.app = QtGui.QApplication([])
+        self.form = visualize.SimpleHeatMap()
+        result = self.form.render_image(result["all_data"])
+        self.assertTrue(result)
+
 if __name__ == "__main__":
     unittest.main()

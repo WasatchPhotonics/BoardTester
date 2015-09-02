@@ -146,7 +146,7 @@ class VisualizeApplication(object):
             help="Entire node to process of exam results")
     
         parser.add_argument("-g", "--graph", required=False,
-            default="gaps", choices=["gaps", "heatmap"],
+            default="gaps", choices=["gaps", "heatmap", "gain"],
             help="Visualization to generate from node data")
 
         parser.add_argument("-c", "--autoclose", required=False,
@@ -180,6 +180,14 @@ class VisualizeApplication(object):
             result = proc.collate_pixels(self.args.node)
             shm = SimpleHeatMap()
             shm.render_image(result["all_data"])
+
+        elif self.args.graph == "gain":
+            csv_filename = "boardtester/test/known_results/" \
+                           + "PRL_Gain_0_255_Offset_128.csv"
+            result = proc.csv_to_pixels(csv_filename)
+            shm = SimpleHeatMap()
+            shm.render_image(result["all_data"])
+        
 
         if not self.args.testing:
             sys.exit(app.exec_())

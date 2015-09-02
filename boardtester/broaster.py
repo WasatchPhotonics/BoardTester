@@ -362,6 +362,45 @@ class ProcessBroaster(object):
  
         return line_data
 
+    def csv_to_pixels(self, filename):
+        """ Given a header-less Dash csv file, discard the extraneous
+        line data and convert to two dimensional array.
+        """
+        dres = { "all_data": [] }
+
+        # This expects a file generated with the command:
+        #grep -E '"128","90",'
+        #~/wasatch/share_data/common/System/QC/PRL\
+        #Testing/Barbecue/Gain_Offset_Results/\
+        #PRLW047_fpga_Wed_Jul_30_12_10_51_2014/*.csv
+        #> pure_128s
+        #
+        # cat pure_128s | sort -V > sorted_gain_offset.csv
+
+        log_file = open(filename)
+
+        all_lines = ""
+        for line in log_file.readlines():
+            pix_data = self.convert_csv_to_pixel(line)
+            dres["all_data"].append(pix_data)
+
+        data = numpy.array(dres["all_data"]).astype(float)
+        dres["all_data"] = data
+        return dres 
+
+    def convert_csv_to_pixel(self, line):
+        """ chop of the begging csv delimited entries, split remaining
+        data on "," then populate array.
+        """
+        csv_parts = line.split("\"na\",\"na\",2048,")
+        data = csv_parts[1]
+        #print "line of data is: [%s]" % data
+        pixel_data = []
+        for item in data.split(","):
+            pixel_data.append(item)
+
+        return pixel_data
+
 class WasatchBroaster_Exam(object):
     """ Power cycle devices, store results in automatically created log
     files.
