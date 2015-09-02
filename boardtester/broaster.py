@@ -369,13 +369,16 @@ class ProcessBroaster(object):
         dres = { "all_data": [] }
 
         # This expects a file generated with the command:
+        # 128 below is the line number
+        # Dash files start at 1, so it's the offset 127
+        #
         #grep -E '"128","90",'
         #~/wasatch/share_data/common/System/QC/PRL\
         #Testing/Barbecue/Gain_Offset_Results/\
         #PRLW047_fpga_Wed_Jul_30_12_10_51_2014/*.csv
         #> pure_128s
         #
-        # cat pure_128s | sort -V > sorted_gain_offset.csv
+        # cat pure_128s | sort -V > PRL_Gain_0_255_Offset_127.csv
 
         log_file = open(filename)
 

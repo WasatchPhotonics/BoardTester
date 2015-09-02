@@ -26,8 +26,9 @@ class SimpleHeatMap(QtGui.QWidget):
     def setupUI(self):
         """ Place a guiqwt imagedialog on the widget.
         """
-        self.mainImageDialog = plot.ImageDialog(toolbar=True, edit=True,
-            wintitle="Image Dialog")
+        self.mainImageDialog = plot.ImageDialog(toolbar=True, 
+             options=dict(show_xsection=True, show_ysection=True,
+                          show_contrast=True))
 
         self.plot = self.mainImageDialog.get_plot()
     
