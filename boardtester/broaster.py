@@ -379,6 +379,17 @@ class ProcessBroaster(object):
         #> pure_128s
         #
         # cat pure_128s | sort -V > PRL_Gain_0_255_Offset_127.csv
+        #
+        # Alternatively, here is the offset 255 and all gains command
+        # list:
+        #grep -E '"256","90",'
+        #~/wasatch/share_data/common/System/QC/PRL\
+        #Testing/Barbecue/Gain_Offset_Results/\
+        #PRLW047_fpga_Wed_Jul_30_12_10_51_2014/*.csv
+        # > offset_255s
+        #
+        # cat offset_255s | sort -V > PRL_Offset_255_Gain_0_254.csv
+        
 
         log_file = open(filename)
 
