@@ -9,9 +9,9 @@ config = {
     "url": "https://github.com/nharringtonwasatch/BoardTester",
     "download_url": "https://github.com/nharringtonwasatch/BoardTester",
     "author_email": "nharrington@wasatchphotonics.com",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "install_requires": ["phidgeter", "wasatchusb", "wpexam",
-                         "colorama", "wmi", "natsort", "cython", ],
+                         "colorama", "wmi", "natsort"],
     "packages": ["boardtester"],
     "scripts": [],
     "name": "BoardTester"
