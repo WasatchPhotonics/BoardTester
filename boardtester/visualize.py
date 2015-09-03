@@ -23,7 +23,7 @@ class SimpleHeatMap(QtGui.QWidget):
         self.setupUI()
         self.show()
 
-    def setupUI(self):
+    def setupUI(self, defaults=None):
         """ Place a guiqwt imagedialog on the widget.
         """
         self.mainImageDialog = plot.ImageDialog(toolbar=True, 
@@ -62,7 +62,7 @@ class SimpleLineGraph(QtGui.QWidget):
         widget. Set local variables for re-use.
         """
         self.mainCurveDialog = plot.CurveDialog(toolbar=True,
-            edit=True, wintitle="Main Dialog")
+            wintitle="Main Dialog")
 
         self.plot = self.mainCurveDialog.get_plot()
         
