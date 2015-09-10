@@ -53,12 +53,11 @@ class SimpleHeatMap(QtGui.QWidget):
         try:
             self.image.set_data(data_list)
         except:
-            print "Creating image"
             bmi = builder.make.image
             self.image = bmi(data_list)
             self.plot.add_item(self.image)
     
-        self.plot.do_autoscale()
+        self.plot.replot()
         return True
 
         
@@ -209,7 +208,6 @@ class VisualizeApplication(object):
     def update_offset(self, offset):
         """ Given an input offset number, load that file and display.
         """
-        print "New offset: %s" % offset
         proc = broaster.ProcessBroaster()
         csv_filename = "boardtester/test/known_results/" \
                        + "PRLW047_sorted_20140730/" \
