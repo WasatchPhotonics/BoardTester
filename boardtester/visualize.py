@@ -32,9 +32,9 @@ class SimpleHeatMap(QtGui.QWidget):
 
         self.plot = self.mainImageDialog.get_plot()
     
-        vbox = QtGui.QVBoxLayout()
-        vbox.addWidget(self.mainImageDialog)
-        self.setLayout(vbox)
+        self.vbox = QtGui.QVBoxLayout()
+        self.vbox.addWidget(self.mainImageDialog)
+        self.setLayout(self.vbox)
         self.setGeometry(100, 100, 800, 800)
        
     def render_image(self, data_list):
@@ -159,6 +159,50 @@ class VisualizeApplication(object):
         
         return parser
 
+    def add_offset_controls(self):
+        """ Add gui controls for viewing different versions of the
+        heatmap based on the csv offset extraction.
+        """
+        self.shm = SimpleHeatMap()
+
+        offsetGroup = QtGui.QFrame()
+        offsetLayout = QtGui.QHBoxLayout(offsetGroup)
+
+        self.labelOffset = QtGui.QLabel("Current offset is: ")
+        self.spinBoxOffset = QtGui.QSpinBox() 
+        self.spinBoxOffset.setMinimum(0)
+        self.spinBoxOffset.setMaximum(255)
+        self.sliderOffset = QtGui.QSlider(QtCore.Qt.Horizontal)
+        self.sliderOffset.setMinimum(0)
+        self.sliderOffset.setMaximum(255)
+
+        offsetLayout.addWidget(self.labelOffset)
+        offsetLayout.addWidget(self.spinBoxOffset)
+        offsetLayout.addWidget(self.sliderOffset)
+        
+        spacer = QtGui.QWidget()
+        spacer.setSizePolicy(QtGui.QSizePolicy.Expanding,
+                             QtGui.QSizePolicy.Expanding)
+        offsetLayout.addWidget(spacer)
+
+        self.shm.vbox.addWidget(offsetGroup)
+
+        self.sliderOffset.valueChanged.connect(self.spinBoxOffset.setValue)
+        self.spinBoxOffset.valueChanged.connect(self.sliderOffset.setValue)
+        self.spinBoxOffset.valueChanged.connect(self.update_offset)
+
+
+    def update_offset(self, offset):
+        """ Given an input offset number, load that file and display.
+        """
+        print "New offset: %s" % offset
+        proc = broaster.ProcessBroaster()
+        csv_filename = "boardtester/test/known_results/" \
+                       + "PRLW047_sorted_20140730/" \
+                       + "PRL_Offset_%s_Gain_0_254.csv" % offset
+        result = proc.csv_to_pixels(csv_filename)
+        self.shm.render_image(result["all_data"])
+
     def run(self):
         """ Create the Qt application if required, execute the specific
         processing collation steps for the designated graph mode. Then
@@ -192,16 +236,14 @@ class VisualizeApplication(object):
         
 
         elif self.args.graph == "offset":
-            csv_filename = "boardtester/test/known_results/" \
-                           + "PRL_Offset_255_Gain_0_254.csv"
-            result = proc.csv_to_pixels(csv_filename)
-            shm = SimpleHeatMap()
-            shm.render_image(result["all_data"])
-        
-
+            self.form = self.add_offset_controls() 
+            self.update_offset(255)
+            
 
         if not self.args.testing:
             sys.exit(app.exec_())
+
+
 
 def main(argv=None): 
     """ main calls the wrapper code around the application objects with
