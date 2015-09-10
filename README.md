@@ -42,7 +42,7 @@ https://github.com/nharringtonwasatch/BoardTester/blob/master/docs/guiqwt_python
 
     On first installation, make sure to extract the offset/gain data in
     into the testing folder. Specifically, download the file at the
-    location:  https://goo.gl/w3ytRJ into the folder:
+    location: http://goo.gl/w3ytRJ into the folder:
 ```
 boardtester/test/known_results/
 ```
@@ -56,6 +56,4 @@ known_results/PRLW047_sorted_20140730/PRL_Offset_91_Gain_0_254.csv
 known_results/PRLW047_sorted_20140730/PRL_Offset_92_Gain_0_254.csv
 ...
 ```
-
-    To view offset output values, make sure to extract the 
 
