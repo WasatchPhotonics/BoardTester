@@ -38,3 +38,24 @@ visualize Installation:
     closely matches that provided by python xy 2.7.10, see the file: 
    
 https://github.com/nharringtonwasatch/BoardTester/blob/master/docs/guiqwt_pythonxy_match.md
+
+
+    On first installation, make sure to extract the offset/gain data in
+    into the testing folder. Specifically, download the file at the
+    location:  https://goo.gl/w3ytRJ into the folder:
+```
+boardtester/test/known_results/
+```
+
+    Extract the zip file, and Make sure the output directory has the 
+    format:
+
+```
+known_results/PRLW047_sorted_20140730/PRL_Offset_90_Gain_0_254.csv
+known_results/PRLW047_sorted_20140730/PRL_Offset_91_Gain_0_254.csv
+known_results/PRLW047_sorted_20140730/PRL_Offset_92_Gain_0_254.csv
+...
+```
+
+    To view offset output values, make sure to extract the 
+
