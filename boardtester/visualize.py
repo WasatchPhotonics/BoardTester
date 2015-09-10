@@ -46,6 +46,20 @@ class SimpleHeatMap(QtGui.QWidget):
         self.plot.add_item(self.image)
         self.plot.do_autoscale()
         return True
+       
+    def update_image(self, data_list):
+        """ Re-use the existing single image on the heatmap.
+        """
+        try:
+            self.image.set_data(data_list)
+        except:
+            print "Creating image"
+            bmi = builder.make.image
+            self.image = bmi(data_list)
+            self.plot.add_item(self.image)
+    
+        self.plot.do_autoscale()
+        return True
 
         
 class SimpleLineGraph(QtGui.QWidget):
@@ -201,7 +215,7 @@ class VisualizeApplication(object):
                        + "PRLW047_sorted_20140730/" \
                        + "PRL_Offset_%s_Gain_0_254.csv" % offset
         result = proc.csv_to_pixels(csv_filename)
-        self.shm.render_image(result["all_data"])
+        self.shm.update_image(result["all_data"])
 
     def run(self):
         """ Create the Qt application if required, execute the specific
