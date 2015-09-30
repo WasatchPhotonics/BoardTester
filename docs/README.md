@@ -53,7 +53,8 @@ Further analysis is possible with the heatmap visualization:
 
 The ‘heatmap’ visualization reads in every pixel value stored in all of
 the exam_log files created for each run of the broaster. This data is
-represented as a 2-dimensional heatmap using the guiqwt imagedialog.
+represented as a 2-dimensional heatmap using the [guiqwt] (https://pythonhosted.org/guiqwt/)
+[ImageDialog] (https://pythonhosted.org/guiqwt/reference.html).
 Hover your mouse over the heatmap while holding down the alt key to see
 live updates in the cross-section window top the top and right of the
 image. Click the image, and then select the start and end values in the
