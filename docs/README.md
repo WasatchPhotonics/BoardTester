@@ -22,7 +22,10 @@ any attempt to acquire data from the device result in an python
 exception, USB protocol timeout, or other error?
 
 ```python boardtester/visualize.py -g gaps -n “exam_results”```
+
+
 ![broaster screenshot](/docs/narr_visualizegaps.png "broaster narrative screenshot")
+
 
 The ‘gaps’ visualization module process all of the logged pixel data for
 an average on a per-line basis. The plot of these average values will be
@@ -30,6 +33,7 @@ shown with gaps for each of the missing data points. In the graph above,
 there are no missing data points, and the average data value for the CCD
 is well within the noise level of the detector.  The image below shows a
 cropped version of the opposite conditions:
+
 
 ![broaster screenshot](/docs/narr_visualizewidegaps.png "broaster narrative screenshot")
 
@@ -39,7 +43,11 @@ others. Also note the wide variance in average signal levels.
 
 
 Further analysis is possible with the heatmap visualization:
-python boardtester/visualize.py -g heatmap -n “exam_results”
+
+
+```python boardtester/visualize.py -g heatmap -n “exam_results”```
+
+
 ![broaster screenshot](/docs/narr_heatmap.png "broaster narrative screenshot")
 
 
@@ -58,6 +66,7 @@ turning off image aspect ratio lock. The image was then zoomed into a
 region around the peak. Make sure to click the ‘>>’ button in the top
 cross section toolbar and turn off auto-scaling to have the axis match
 with the image.
+
 ![broaster screenshot](/docs/narr_heatmapcontrast.png "broaster narrative screenshot")
 
 Look for patterns in the data that can be difficult to pickup through
