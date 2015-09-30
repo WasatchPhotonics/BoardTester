@@ -184,16 +184,22 @@ class ProcessBroaster(object):
 
         return sum_val / len(pixel_data)
 
-    def get_pixel_data(self, in_str):
+    def get_pixel_data(self, in_str, pixel_size=2048):
         """ Given a line of space delimted pixel data in a string,
         return a list of values.
         """
-
+        print "In get pixel data"
         pixel_line = in_str.split('Pixel Start:  ')[1]
-        pixels = pixel_line.split(', ')
-        #print "Pixels %s" % pixels[0:2048]
+        # chop off the trailing \n and remaining lines
+        pixel_line = pixel_line.split('\n')[0]
+        str_pixels = pixel_line.split(', ')
+        
+        pixels = []
+        for pix in str_pixels:
+            pix = pix.replace(',', '')
+            pixels.append(int(pix))
 
-        return pixels[0:2048]
+        return pixels[0:pixel_size]
 
 
     def process_mti_group(self, node_name):
@@ -357,7 +363,7 @@ class ProcessBroaster(object):
         line_data = []
         for item in by_group:
             if "Pixel Start:" in item:
-                pix_data = self.get_pixel_data(item)
+                pix_data = self.get_pixel_data(item, pixel_size=1024)
                 line_data.append(pix_data)
  
         return line_data
@@ -424,7 +430,7 @@ class WasatchBroaster_Exam(object):
         print "exam name is [%s]" % exam_name
         self.ex = Exam(exam_name) 
         self.vid = 0x24aa
-        self.pid = 0x0009
+        self.pid = 0x1000
 
     def run(self, max_runs=100):
         """ Main loop for the broaster exam. Turns on the device, waits,
@@ -469,14 +475,19 @@ class WasatchBroaster_Exam(object):
     def revision_info(self, count):
         """ Actually connect to the device, get the firmware revisions
         """
+
         revision_str = " Start of revision info " 
         try:
             device = camera.CameraUSB()
             self.device = device
             result = device.connect(self.vid, self.pid)
             revision_str += " result [%s] " % result
-    
+
+            #if self.pid == 4096: # 0x1000 feature identification
+                #codes = self.get_
+            #else:
             codes = self.get_revisions(device) 
+
             revision_str += " %s " % codes
         except:
             revision_str += " Error get revision: %s" % str(sys.exc_info())
@@ -501,19 +512,30 @@ class WasatchBroaster_Exam(object):
         """ Read various groups of lines from the device.
         """
         line_info = " Start of line info "
+        px_data = None
         try:
-            result = self.check_bulk_data(self.device, 10)
+            result, px_data = self.check_bulk_data(self.device, 10)
             line_info += result
+            #write out the pixel data of the last successful read
         except:
             line_info += " Error lines info: %s" % str(sys.exc_info())
 
         self.append_to_log(self.ex, count, line_info) 
+
+        pix_str = "Pixel Start: "
+        if px_data != None:
+            for item in px_data:
+                pix_str += " %s," % item
+
+        self.append_to_log(self.ex, count, pix_str) 
+
         return line_info
 
     def check_bulk_data(self, device, line_count):
         """ Perform the read of the specified number of lines from the
         device.
         """
+        device.set_laser_enable(1)
         curr_count = 0 
         result = " Start read of %s lines" % line_count
         while curr_count < line_count: 
@@ -526,7 +548,8 @@ class WasatchBroaster_Exam(object):
 
             curr_count += 1
 
-        return result
+        device.set_laser_enable(0)
+        return result, pixel_data
 
     def get_revisions(self, device):
         result, sw_code = device.get_sw_code()
