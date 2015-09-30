@@ -188,7 +188,6 @@ class ProcessBroaster(object):
         """ Given a line of space delimted pixel data in a string,
         return a list of values.
         """
-        print "In get pixel data"
         pixel_line = in_str.split('Pixel Start:  ')[1]
         # chop off the trailing \n and remaining lines
         pixel_line = pixel_line.split('\n')[0]
