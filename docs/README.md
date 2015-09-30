@@ -2,7 +2,7 @@ BoardTester usage
 
 broaster, visualize and camids are designed to help you evaluate the
 efficacy of line scan and area scan cameras. This helps you change ‘it
-works’ into statistical data on the quality and quantity of the imagery.
+doesn't work’ into statistical data on the quality and quantity of the imagery.
 
 For example, you use the broaster to collect line scan camera data from
 a Wasatch Photonics WP 785 class device:
