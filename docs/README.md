@@ -75,3 +75,4 @@ standard statistical measurements, such as precessing or intermittent
 hot pixels.  Try different colors maps such as ‘prism’ for alternate
 visualizations.
 
+![broaster screenshot](/docs/narr_narr_visualize_gist_stern.png "gist stern colormap")
