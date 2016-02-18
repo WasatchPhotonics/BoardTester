@@ -7,6 +7,7 @@ from phidgeter import relay
 import wasatchusb
 from wasatchusb import feature_identification
 
+total_count = 0
 
 def print_pixel():
     """ Print the default set of data from the device. To diagnose these
@@ -46,7 +47,8 @@ def print_pixel():
             % (min(data), max(data), avg_data)
 
     pixel_range = [270, 271, 272, 273, 274, 275]
-    print "270    271    272    273    274    275"
+    print "%s Pixels: 270    271    272    273    274    275" % total_count
+    print "%s Values:" % total_count,
     for pix in pixel_range:
         print "%s " %  data[pix],
     print ""
@@ -89,4 +91,5 @@ while stop_test == False:
         print "Failure, writing blank line: %s" % exc
 
     write_data(raw_data)
+    total_count += 1
 
