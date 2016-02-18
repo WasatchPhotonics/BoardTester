@@ -1,4 +1,6 @@
 import time
+import logging
+log = logging.getLogger(__name__)
 
 from phidgeter import relay
 
@@ -30,6 +32,11 @@ def print_pixel():
 
     device = feature_identification.Device(pid=last_pid)
     device.connect()
+
+    integration_time = 100
+    print "Set integration time: %s" % integration_time
+    device.set_integration_time(100)
+
 
     data = device.get_line()
     avg_data =  sum(data) / len(data)
@@ -73,6 +80,7 @@ while stop_test == False:
 
         print "On Wait %s..." % on_wait_interval
         time.sleep(on_wait_interval)
+
 
         raw_data = print_pixel()
         phd_relay.one_off()
