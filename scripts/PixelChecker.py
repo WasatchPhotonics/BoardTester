@@ -1,4 +1,5 @@
 import time
+import sys
 import logging
 log = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ def print_pixel():
     result = dev_list.get_all()
     if result == []:
         print "No devices found!"
-        sys.exit(1)
+        return []
 
     dev_count = 0
     #for item in dev_list.get_all():
@@ -47,16 +48,21 @@ def print_pixel():
             % (min(data), max(data), avg_data)
 
     pixel_range = [270, 271, 272, 273, 274, 275]
-    print "%s Pixels: 270    271    272    273    274    275" % total_count
+    print "%s Pixels:" % total_count,
+    for idx in pixel_range:
+        print "{:8}".format(idx),
+    print ""
+
     print "%s Values:" % total_count,
     for pix in pixel_range:
-        print "%s " %  data[pix],
+        print "{:8}".format(data[pix]),
     print ""
 
     return data
 
 
-def write_data(raw_data, filename="csvout.csv"):
+
+def write_data(raw_data, filename="on_server_link/csvout.csv"):
     """ Append the specified pixel data in csv format to a text file.
     """
     with open(filename, "a") as out_file:
@@ -71,25 +77,27 @@ phd_relay = relay.Relay()
 stop_test = False
 off_wait_interval = 3
 on_wait_interval = 10
-while stop_test == False:
-    raw_data = range(0, 0, 512)
 
-    try:
-        phd_relay.one_off()
-        print "Off Wait %s..." % off_wait_interval
-        time.sleep(off_wait_interval)
-        phd_relay.one_on()
+raw_data = range(0, 0, 512)
 
-        print "On Wait %s..." % on_wait_interval
-        time.sleep(on_wait_interval)
+try:
+    phd_relay.one_off()
+    print "Off Wait %s..." % off_wait_interval
+    time.sleep(off_wait_interval)
+    phd_relay.one_on()
+
+    print "On Wait %s..." % on_wait_interval
+    time.sleep(on_wait_interval)
 
 
-        raw_data = print_pixel()
-        phd_relay.one_off()
+    raw_data = print_pixel()
+    phd_relay.one_off()
 
-    except Exception as exc:
-        print "Failure, writing blank line: %s" % exc
+except Exception as exc:
+    print "Failure, writing blank line: %s" % exc
 
-    write_data(raw_data)
-    total_count += 1
+#filename = datetime.strptime(datetime.now(),
+                             #"Start_%Y_%m_%d_%H_%M_%S.csv")
+write_data(raw_data)
+total_count += 1
 
