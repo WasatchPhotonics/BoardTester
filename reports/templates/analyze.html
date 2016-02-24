@@ -39,7 +39,7 @@
                     label: "Pixel Data",
                     fillColor: "#4fc6a6",
                     strokeColor: "rgba(255,255,255,1)",
-                    ${pixel_data}
+                    data: [${pixel_data}],
                 },
             ]
         };
@@ -115,71 +115,14 @@
     <script src="assets/js/Chart.js"></script>
   <body>
 
-    <div class="container-fluid title-cookbook">
-      <a class="nav-link" href="${request.route_path('home_redirect')}">
-        <div class="col-md-6 text-right title-cook-word">
-          <img src="assets/img/new_wp_with_arch_white_24x27.png">
-          1064
-        </div>
-      </a>
-      <a class="nav-link" href="${request.route_path('home_redirect')}">
-        <div class="col-md-6 title-book-word">
-            Test
-        </div>
-      </a>
-    </div>
 
-    <div class="container">
-      <div class="jumbotron page-title-area">
-        <div class="col-md-4 page-icon">
-          <img src="assets/img/analyze-header.png">
-        </div>
-          <div class="page-title-text">
-            Analyze
-          </div>
-          <div class="page-subtitle-text">
-            Pixel data
-          </div>
-      </div>
-    </div>
-
-
-    <div class="container analyze-graphs">
-      <div class="row">
-        <div class="col-md-12">
           <div class="graph-title-area">
             Last 10 readings:
           </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-12">
           <div class="date-graph-block">
             <canvas id="canvas-date"></canvas>
           </div>
-        </div>
-      </div>
-    </div> <!-- /container -->
 
-
-    <div class="container center-checkout">
-
-      <div class="row footer-wasatch">
-        <div class="col-md-4">
-          <div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div>
-          </div>
-        </div>
-      </div>
-
-    </div> <!-- /container -->
 
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

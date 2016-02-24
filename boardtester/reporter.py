@@ -3,11 +3,20 @@
 
 class SimpleReport(object):
     def __init__(self, filename="test_file.html"):
-        self.filename = filename
+        self.template_file = "reports/templates/analyze.html"
         self.template = ""
+        self.output_file = filename
 
         with open(self.template_file) as in_file:
-            self.template = in_file.readlines()
+            for new_line in in_file.readlines():
+                self.template += new_line
+
+        #print "full template ", self.template
 
     def replace(self, template_str, new_str):
-        self.template.replace(template_str, new_str)
+        self.template = self.template.replace(template_str, new_str)
+
+    def write(self):
+        with open(self.output_file, "wb") as out_file:
+            out_file.writelines(self.template)
+
