@@ -1,6 +1,11 @@
+""" rough and ready script to collect a single line of data from a wasatch
+photonics feature identification device. Can use simple template replacement for
+html visualizations.  """
+
 import time
 import sys
 import logging
+from boardtester import reporter
 log = logging.getLogger(__name__)
 
 from phidgeter import relay
@@ -100,6 +105,9 @@ on_wait_interval = 10
 
 raw_data = range(0, 0, 512)
 
+raw_data = range(0, 512)
+update_html_report(raw_data)
+sys.exit(1)
 try:
     phd_relay.one_off()
     print "Off Wait %s..." % off_wait_interval
