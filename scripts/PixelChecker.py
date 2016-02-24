@@ -70,6 +70,26 @@ def write_data(raw_data, filename="on_server_link/csvout.csv"):
             out_file.write("%s," % pixel)
         out_file.write("\n")
 
+def update_html_report(raw_data, filename="on_server_link/last_10.html"):
+    """ Create a jchart static html file showing a graph of the last data.
+    """
+    rep = reporter.SimpleReport()
+
+    if len(raw_data) <= 0:
+        print "Do not create empty data analysis file."
+
+    number_axis = range(0, len(raw_data))
+    str_axis = str(number_axis)
+    str_axis = str_axis.replace("[", "")
+    str_axis = str_axis.replace("]", "")
+    rep.replace("${time_labels}", str_axis)
+
+    str_axis = str(raw_data)
+    str_axis = str_axis.replace("[", "")
+    str_axis = str_axis.replace("]", "")
+    rep.replace("${pixel_data}", str_axis)
+
+    rep.write()
 
 
 phd_relay = relay.Relay()
@@ -99,5 +119,6 @@ except Exception as exc:
 #filename = datetime.strptime(datetime.now(),
                              #"Start_%Y_%m_%d_%H_%M_%S.csv")
 write_data(raw_data)
+update_html_report(raw_data)
 total_count += 1
 
