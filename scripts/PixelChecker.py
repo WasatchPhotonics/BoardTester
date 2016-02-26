@@ -1,6 +1,11 @@
 """ rough and ready script to collect a single line of data from a wasatch
 photonics feature identification device. Can use simple template replacement for
-html visualizations.  """
+html visualizations.
+
+Example run:
+perl -e '$c=0;while(1){$c+=1;print "Pass $c";print `python scripts/PixelChecker.py; cp test_file.html on_server_link/`}'
+
+"""
 
 import time
 import sys
@@ -14,6 +19,55 @@ import wasatchusb
 from wasatchusb import feature_identification
 
 total_count = 0
+
+def group_pixel():
+    """ Like print_pixel below, but reuse the connection and get max_count acquisitions.
+    """
+
+    dev_list = feature_identification.ListDevices()
+    result = dev_list.get_all()
+    if result == []:
+        print "No devices found!"
+        return []
+
+    dev_count = 0
+    last_device = dev_list.get_all()[-1]
+    last_pid = int(last_device[1], 16)
+
+    device = feature_identification.Device(pid=last_pid)
+    device.connect()
+
+    integration_time = 100
+    print "Set integration time: %s" % integration_time
+    device.set_integration_time(100)
+
+    # Make sure the data is empty first
+    group_data = []
+    max_count = 5
+    for item in range(max_count):
+        group_data.append(range(0, 0, 512))
+
+    for line_item in range(max_count):
+        data = device.get_line()
+        avg_data =  sum(data) / len(data)
+        #print ""
+        #print "Grab Data: %s pixels" % len(data)
+        print "Min: %s Max: %s Avg: %s" \
+                % (min(data), max(data), avg_data)
+
+        pixel_range = [270, 271, 272, 273, 274, 275]
+        print "%s Pixels:" % total_count,
+        for idx in pixel_range:
+            print "{:8}".format(idx),
+        print ""
+
+        print "%s Values:" % total_count,
+        for pix in pixel_range:
+            print "{:8}".format(data[pix]),
+        print ""
+        group_data[line_item] = data
+
+    return group_data
 
 def print_pixel():
     """ Print the default set of data from the device. To diagnose these
@@ -75,6 +129,16 @@ def write_data(raw_data, filename="on_server_link/csvout.csv"):
             out_file.write("%s," % pixel)
         out_file.write("\n")
 
+def write_group(group_data, filename="on_server_link/group_out.csv"):
+    """ Append the specified group of pixel data in csv format to a text file.
+    """
+    for line_item in group_data:
+        with open(filename, "a") as out_file:
+            for pixel in line_item:
+                out_file.write("%s," % pixel)
+            out_file.write("\n")
+
+
 def update_html_report(raw_data, filename="on_server_link/last_10.html"):
     """ Create a jchart static html file showing a graph of the last data.
     """
@@ -105,9 +169,10 @@ on_wait_interval = 10
 
 raw_data = range(0, 0, 512)
 
-raw_data = range(0, 512)
-update_html_report(raw_data)
-sys.exit(1)
+#raw_data = range(0, 512)
+#update_html_report(raw_data)
+#sys.exit(1)
+
 try:
     phd_relay.one_off()
     print "Off Wait %s..." % off_wait_interval
@@ -118,15 +183,19 @@ try:
     time.sleep(on_wait_interval)
 
 
-    raw_data = print_pixel()
+    #raw_data = print_pixel()
+    group_data = group_pixel()
+
     phd_relay.one_off()
 
 except Exception as exc:
     print "Failure, writing blank line: %s" % exc
 
-#filename = datetime.strptime(datetime.now(),
-                             #"Start_%Y_%m_%d_%H_%M_%S.csv")
-write_data(raw_data)
-update_html_report(raw_data)
+#write_data(raw_data)
+#update_html_report(raw_data)
+
+write_group(group_data)
+update_html_report(group_data[-1])
+
 total_count += 1
 
