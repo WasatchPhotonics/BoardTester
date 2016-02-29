@@ -24,6 +24,7 @@ import sys
 import time
 import numpy
 import logging
+import datetime
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
@@ -51,26 +52,42 @@ time.sleep(laser_enable_wait)
 filename = "combined_log.csv"
 log.info("Starting log of: %s to %s", serial, filename)
 
-period = 1
+period = 10
 samples = 10
-log.info("Logging %s samples every %s seconds", samples, period)
+sleep_interval = (float(period) / float(samples))
+log.info("Logging %s samples every %s seconds (sample rate: %s)", \
+         samples, period, sleep_interval)
 
 l_temps = []
 c_temps = []
 l_power = []
-
-def init_data():
-    l_temps = []
-    c_temps = []
-    l_power = []
 
 def write_data():
     l_temp_grp  = [min(l_temps), max(l_temps), numpy.average(l_temps)]
     c_temp_grp  = [min(c_temps), max(c_temps), numpy.average(c_temps)]
     l_power_grp = [min(l_power), max(l_power), numpy.average(l_power)]
 
-    combined_data = l_temp_grp, c_temp_grp, l_power_grp
+    combined_data = c_temp_grp, l_temp_grp, l_power_grp
     log.warn("Combined: %s", combined_data)
+    log.info("Length: %s", len(l_temps))
+
+    timestamp = datetime.datetime.now()
+    with open(filename, "a") as out_file:
+        out_file.write("%s," % timestamp)
+
+        # CCD Temperature groups:
+        for item in c_temp_grp:
+            out_file.write("%s," % item)
+
+        # Laser Temperature groups:
+        for item in l_temp_grp:
+            out_file.write("%s," % item)
+
+        # Laser power groups:
+        for item in l_power_grp:
+            out_file.write("%s," % item)
+
+        out_file.write("\n")
 
 def get_data():
     l_temps.append(device.get_laser_temperature())
@@ -79,13 +96,10 @@ def get_data():
 
 
 stop_log = False
-init_data()
-get_data()
 
 start_time = time.time()
-
 while not stop_log:
-    time.sleep(period + 1.0)
+    time.sleep(sleep_interval)
     now_time = time.time()
 
     curr_time = abs(now_time - start_time)
@@ -94,14 +108,16 @@ while not stop_log:
     if curr_time >= period:
         log.warn("Write to file")
         write_data()
-        init_data()
+
+        l_temps = []
+        c_temps = []
+        l_power = []
         start_time = time.time()
 
 
     else:
+        log.debug("Get data")
         get_data()
-
-    stop_log = True
 
 
 #device.set_laser_enable(0)
