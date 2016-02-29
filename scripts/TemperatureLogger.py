@@ -28,7 +28,7 @@ import datetime
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
-frmt_str = "%(levelname)-8s %(message)s"
+frmt_str = "%(asctime)-8s %(message)s"
 frmt = logging.Formatter(frmt_str)
 strm = logging.StreamHandler(sys.stdout)
 strm.setFormatter(frmt)
@@ -68,8 +68,6 @@ def write_data():
     l_power_grp = [min(l_power), max(l_power), numpy.average(l_power)]
 
     combined_data = c_temp_grp, l_temp_grp, l_power_grp
-    log.warn("Combined: %s", combined_data)
-    log.info("Length: %s", len(l_temps))
 
     timestamp = datetime.datetime.now()
     with open(filename, "a") as out_file:
@@ -79,19 +77,19 @@ def write_data():
         ccd_str = ""
         for item in c_temp_grp:
             out_file.write("%s," % item)
-            ccd_str += "%2.2f" % item
+            ccd_str += "%2.2f," % item
 
         # Laser Temperature groups:
         las_str = ""
         for item in l_temp_grp:
             out_file.write("%s," % item)
-            las_str += "%2.2f" % item
+            las_str += "%2.2f," % item
 
         # Laser power groups:
         pow_str = ""
         for item in l_power_grp:
             out_file.write("%s," % item)
-            pow_str += "%2.2f" % item
+            pow_str += "%2.2f," % item
 
         out_file.write("\n")
 
@@ -114,7 +112,6 @@ while not stop_log:
     curr_time = abs(now_time - start_time)
 
     if curr_time >= period:
-        log.warn("Write to file")
         write_data()
 
         l_temps = []
