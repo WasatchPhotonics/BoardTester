@@ -27,7 +27,7 @@ import logging
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
-frmt_str = "%(name)s %(levelname)-8s %(message)s"
+frmt_str = "%(levelname)-8s %(message)s"
 frmt = logging.Formatter(frmt_str)
 strm = logging.StreamHandler(sys.stdout)
 strm.setFormatter(frmt)
@@ -42,33 +42,66 @@ pm100usb = devices.ThorlabsMeter()
 device = stroker_protocol.StrokerProtocolDevice()
 result = device.connect()
 serial = device.get_serial_number()
+
+laser_enable_wait = 1
+log.info("Turn laser on, wait %s seconds", laser_enable_wait)
 device.set_laser_enable(1)
+time.sleep(laser_enable_wait)
 
 filename = "combined_log.csv"
-print "Starting log of: %s to %s" \
-    % (serial, filename)
+log.info("Starting log of: %s to %s", serial, filename)
 
-period = 10
+period = 1
 samples = 10
+log.info("Logging %s samples every %s seconds", samples, period)
 
-def get_data(samples):
+l_temps = []
+c_temps = []
+l_power = []
+
+def init_data():
     l_temps = []
     c_temps = []
     l_power = []
 
-    for item in range(samples):
-        l_temps.append(device.get_laser_temperature())
-        c_temps.append(device.get_ccd_temperature())
-        l_power.append(pm100usb.read())
-
+def write_data():
     l_temp_grp  = [min(l_temps), max(l_temps), numpy.average(l_temps)]
     c_temp_grp  = [min(c_temps), max(c_temps), numpy.average(c_temps)]
     l_power_grp = [min(l_power), max(l_power), numpy.average(l_power)]
 
-    return l_temp_grp, c_temp_grp, l_power_grp
+    combined_data = l_temp_grp, c_temp_grp, l_power_grp
+    log.warn("Combined: %s", combined_data)
 
-combined_data = get_data(samples)
-log.warn("Combined: %s", combined_data)
-device.set_laser_enable(0)
+def get_data():
+    l_temps.append(device.get_laser_temperature())
+    c_temps.append(device.get_ccd_temperature())
+    l_power.append(pm100usb.read())
 
 
+stop_log = False
+init_data()
+get_data()
+
+start_time = time.time()
+
+while not stop_log:
+    time.sleep(period + 1.0)
+    now_time = time.time()
+
+    curr_time = abs(now_time - start_time)
+
+
+    if curr_time >= period:
+        log.warn("Write to file")
+        write_data()
+        init_data()
+        start_time = time.time()
+
+
+    else:
+        get_data()
+
+    stop_log = True
+
+
+#device.set_laser_enable(0)
