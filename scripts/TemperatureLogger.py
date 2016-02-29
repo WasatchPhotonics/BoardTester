@@ -61,14 +61,11 @@ def get_data(samples):
         c_temps.append(device.get_ccd_temperature())
         l_power.append(pm100usb.read())
 
-    min_l_temp = min(l_temps)
-    max_l_temp = max(l_temps)
-    avg_l_temp = numpy.average(l_temps)
-
-    l_temp_group = [min_l_temp, max_l_temp, avg_l_temp]
-    c_temp_group = [min(c_temps), max(c_temps), numpy.average(c_temps)]
+    l_temp_grp  = [min(l_temps), max(l_temps), numpy.average(l_temps)]
+    c_temp_grp  = [min(c_temps), max(c_temps), numpy.average(c_temps)]
     l_power_grp = [min(l_power), max(l_power), numpy.average(l_power)]
-    return l_temp_group, c_temp_group, l_power_grp
+
+    return l_temp_grp, c_temp_grp, l_power_grp
 
 combined_data = get_data(samples)
 log.warn("Combined: %s", combined_data)
