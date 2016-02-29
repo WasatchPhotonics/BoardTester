@@ -52,7 +52,7 @@ time.sleep(laser_enable_wait)
 filename = "combined_log.csv"
 log.info("Starting log of: %s to %s", serial, filename)
 
-period = 10
+period = 1
 samples = 10
 sleep_interval = (float(period) / float(samples))
 log.info("Logging %s samples every %s seconds (sample rate: %s)", \
@@ -76,18 +76,26 @@ def write_data():
         out_file.write("%s," % timestamp)
 
         # CCD Temperature groups:
+        ccd_str = ""
         for item in c_temp_grp:
             out_file.write("%s," % item)
+            ccd_str += "%2.2f" % item
 
         # Laser Temperature groups:
+        las_str = ""
         for item in l_temp_grp:
             out_file.write("%s," % item)
+            las_str += "%2.2f" % item
 
         # Laser power groups:
+        pow_str = ""
         for item in l_power_grp:
             out_file.write("%s," % item)
+            pow_str += "%2.2f" % item
 
         out_file.write("\n")
+
+        log.info("%s %s %s", ccd_str, las_str, pow_str)
 
 def get_data():
     l_temps.append(device.get_laser_temperature())
@@ -99,11 +107,11 @@ stop_log = False
 
 start_time = time.time()
 while not stop_log:
+    # Sample every sleep interval, write at every period
     time.sleep(sleep_interval)
     now_time = time.time()
 
     curr_time = abs(now_time - start_time)
-
 
     if curr_time >= period:
         log.warn("Write to file")
