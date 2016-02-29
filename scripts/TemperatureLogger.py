@@ -20,6 +20,7 @@ Example configuration:
 
 """
 
+import os
 import sys
 import time
 import numpy
@@ -106,9 +107,21 @@ def get_data():
     l_power.append(pm100usb.read())
 
 
+file_header = "Timestamp,CCD Min,CCD Max,CCD Average," \
+              + "Laser Temperature Min,Laser Temperature Max," \
+              + "Laser Temperature Average," \
+              + "Laser Power Min,Laser Power Max," \
+              + "Laser Power Average,"
+# Print header if file does not exist
+if not os.path.exists(filename):
+    with open(filename, "a") as out_file:
+     out_file.write("%s\n" % file_header)
+
 stop_log = False
 
 start_time = time.time()
+
+
 while not stop_log:
     # Sample every sleep interval, write at every period
     time.sleep(sleep_interval)
