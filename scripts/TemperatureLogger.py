@@ -52,8 +52,8 @@ time.sleep(laser_enable_wait)
 filename = "combined_log.csv"
 log.info("Starting log of: %s to %s", serial, filename)
 
-period = 1
-samples = 10
+period = 10
+samples = 1000
 sleep_interval = (float(period) / float(samples))
 log.info("Logging %s samples every %s seconds (sample rate: %s)", \
          samples, period, sleep_interval)
