@@ -44,7 +44,7 @@ device = stroker_protocol.StrokerProtocolDevice()
 result = device.connect()
 serial = device.get_serial_number()
 
-laser_enable_wait = 1
+laser_enable_wait = 10
 log.info("Turn laser on, wait %s seconds", laser_enable_wait)
 device.set_laser_enable(1)
 time.sleep(laser_enable_wait)
@@ -57,12 +57,17 @@ samples = 1000
 sleep_interval = (float(period) / float(samples))
 log.info("Logging %s samples every %s seconds (sample rate: %s)", \
          samples, period, sleep_interval)
+            
+header_str = "CCD Min, Max, Avg  Las Min, Max, Avg  " \
+             + "Pow Min, Max, Avg"
+log.info(header_str)
 
 l_temps = []
 c_temps = []
 l_power = []
 
 def write_data():
+
     l_temp_grp  = [min(l_temps), max(l_temps), numpy.average(l_temps)]
     c_temp_grp  = [min(c_temps), max(c_temps), numpy.average(c_temps)]
     l_power_grp = [min(l_power), max(l_power), numpy.average(l_power)]
