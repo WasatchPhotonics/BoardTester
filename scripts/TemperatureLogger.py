@@ -26,6 +26,7 @@ import time
 import numpy
 import logging
 import datetime
+import zmq
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
@@ -45,7 +46,7 @@ device = stroker_protocol.StrokerProtocolDevice()
 result = device.connect()
 serial = device.get_serial_number()
 
-laser_enable_wait = 10
+laser_enable_wait = 1
 log.info("Turn laser on, wait %s seconds", laser_enable_wait)
 device.set_laser_enable(1)
 time.sleep(laser_enable_wait)
@@ -53,8 +54,8 @@ time.sleep(laser_enable_wait)
 filename = "combined_log.csv"
 log.info("Starting log of: %s to %s", serial, filename)
 
-period = 10
-samples = 1000
+period = 1
+samples = 100
 sleep_interval = (float(period) / float(samples))
 log.info("Logging %s samples every %s seconds (sample rate: %s)", \
          samples, period, sleep_interval)
@@ -106,6 +107,24 @@ def get_data():
     c_temps.append(device.get_ccd_temperature())
     l_power.append(pm100usb.read())
 
+def zmq_get_data():
+    """ Like get data above, but also spew out on a zmq publisher
+    socket.
+    """
+    l_temps.append(device.get_laser_temperature())
+    c_temps.append(device.get_ccd_temperature())
+    l_power.append(pm100usb.read())
+       
+    topic = "temperatures_and_power"
+    str_mesg = ("%s %s,%s,%s" \
+                % (topic, c_temps[-1], l_temps[-1], l_power[-1]))
+    socket.send(str_mesg)
+
+context = zmq.Context()
+socket = context.socket(zmq.PUB)
+port = "6545"
+log.info("Setup zmq publisher on port %s", port)
+socket.bind("tcp://*:%s" % port)
 
 file_header = "Timestamp,CCD Min,CCD Max,CCD Average," \
               + "Laser Temperature Min,Laser Temperature Max," \
@@ -140,7 +159,8 @@ while not stop_log:
 
     else:
         log.debug("Get data")
-        get_data()
+        #get_data()
+        zmq_get_data()
 
 
 #device.set_laser_enable(0)
