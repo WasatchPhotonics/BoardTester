@@ -206,6 +206,9 @@ while not stop_log:
         l_temps = []
         c_temps = []
         l_power = []
+        y_therm = []
+        b_therm = []
+        e_amper = []
         start_time = time.time()
 
 
