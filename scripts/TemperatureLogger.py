@@ -63,9 +63,6 @@ sleep_interval = (float(period) / float(samples))
 log.info("Logging %s samples every %s seconds (sample rate: %s)", \
          samples, period, sleep_interval)
             
-header_str = "CCD Min, Max, Avg  Las Min, Max, Avg  " \
-             + "Pow Min, Max, Avg"
-log.info(header_str)
 
 l_temps = []
 c_temps = []
@@ -180,6 +177,11 @@ file_header = "Timestamp,CCD Min,CCD Max,CCD Average," \
               + "Yellow thermistor min,Yellow Thermistor Max,Yellow Thermistor Average," \
               + "Blue thermistor min,Blue Thermistor Max,Blue Thermistor Average," \
               + "Amps Min,Amps Max,Amps Average,"
+
+#header_str = "CCD Min, Max, Avg  Las Min, Max, Avg  " \
+#             + "Pow Min, Max, Avg"
+header_str = "CCD Avg  Las Avg Yellow Therm, Blue Therm, Amps"
+log.info(header_str)
 
 # Print header if file does not exist
 if not os.path.exists(filename):
