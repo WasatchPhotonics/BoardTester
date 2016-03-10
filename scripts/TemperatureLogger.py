@@ -43,7 +43,13 @@ from fastpm100 import devices
 
 pm100usb = devices.ThorlabsMeter()
 
-slapchop = devices.SlapChopDevice()
+# There is only one slapchop device, return zeros if it is unavailable.
+slapchop = None
+try:
+    slapchop = devices.SlapChopDevice()
+except Exception as exc:
+    print "Problem setting up slapchop: %s" % exc
+
 
 device = stroker_protocol.StrokerProtocolDevice()
 result = device.connect()
@@ -136,7 +142,9 @@ def get_data():
     c_temps.append(device.get_ccd_temperature())
     l_power.append(pm100usb.read())
 
-    parts = slapchop.read()
+    parts = (0, 0, 0)
+    if slapchop is not None:
+        parts = slapchop.read()
 
     y_therm.append(parts[0])
     b_therm.append(parts[1])
@@ -150,7 +158,9 @@ def zmq_get_data():
     c_temps.append(device.get_ccd_temperature())
     l_power.append(pm100usb.read())
 
-    parts = slapchop.read()
+    parts = (0, 0, 0)
+    if slapchop is not None:
+        parts = slapchop.read()
     y_therm.append(parts[0])
     b_therm.append(parts[1])
     e_amper.append(parts[2])
