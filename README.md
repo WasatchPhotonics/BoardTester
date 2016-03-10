@@ -57,3 +57,12 @@ known_results/PRLW047_sorted_20140730/PRL_Offset_92_Gain_0_254.csv
 ...
 ```
 
+BoardTester\TemperatureLogger.py
+
+    Acquire readings rapidly over a time frame, save the average to disk
+    over a much longer time frame. This allows for realtime
+    visualization of 100's of temperature and power events per second,
+    while also recording instantaneous and long term trends to disk.
+    Broadcasts events over the network to allow for non-interruption
+    required changes in data collection and visualization procedures.
+
