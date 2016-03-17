@@ -17,7 +17,7 @@ Example configuration:
 
     cd BoardTester
     python setup.py develop
-    python scripts/TemperatureLogger.py 
+    python scripts/TemperatureLogger.py
 
 """
 
@@ -55,7 +55,7 @@ device = stroker_protocol.StrokerProtocolDevice()
 result = device.connect()
 serial = device.get_serial_number()
 
-laser_enable_wait = 1
+laser_enable_wait = 10
 log.info("Turn laser on, wait %s seconds", laser_enable_wait)
 device.set_laser_enable(1)
 time.sleep(laser_enable_wait)
@@ -63,12 +63,12 @@ time.sleep(laser_enable_wait)
 filename = "combined_log.csv"
 log.info("Starting log of: %s to %s", serial, filename)
 
-period = 1
-samples = 100
+period = 10
+samples = 1000
 sleep_interval = (float(period) / float(samples))
 log.info("Logging %s samples every %s seconds (sample rate: %s)", \
          samples, period, sleep_interval)
-            
+
 
 l_temps = []
 c_temps = []
@@ -133,7 +133,7 @@ def write_data():
 
         out_file.write("\n")
 
-        log.info("%s %s %s %s %s %s", 
+        log.info("%s %s %s %s %s %s",
                  ccd_str, las_str, pow_str,
                  yel_str, blu_str, amp_str)
 
@@ -164,7 +164,7 @@ def zmq_get_data():
     y_therm.append(parts[0])
     b_therm.append(parts[1])
     e_amper.append(parts[2])
-       
+
     topic = "temperatures_and_power"
     str_mesg = ("%s %s,%s,%s,%s,%s,%s" \
                 % (topic, c_temps[-1], l_temps[-1], l_power[-1], \
