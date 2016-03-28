@@ -42,6 +42,13 @@ from wasatchusb import stroker_protocol
 from fastpm100 import devices
 
 pm100usb = devices.ThorlabsMeter()
+try:
+    result = pm100usb.read()
+except Exception as exc:
+    print "Problem setting up power meter: %s" % exc
+    print "Continuing without power meter"
+    pm100usb = None
+
 
 # There is only one slapchop device, return zeros if it is unavailable.
 slapchop = None
@@ -156,7 +163,11 @@ def zmq_get_data():
     """
     l_temps.append(device.get_laser_temperature())
     c_temps.append(device.get_ccd_temperature())
-    l_power.append(pm100usb.read())
+
+    if pm100usb != None:
+        l_power.append(pm100usb.read())
+    else:
+        l_power.append(0.0)
 
     parts = (0, 0, 0)
     if slapchop is not None:
