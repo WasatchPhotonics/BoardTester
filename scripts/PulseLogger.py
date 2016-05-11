@@ -1,24 +1,7 @@
-""" rough and ready script to collect temperatures from a wasatch
-photonics stroker protocol series device. Also uses the ThorLabsMeter
-cross platform wrapper from FastPM100 to collect power readings.
+""" Based on TemperatureLogger.py, with laser pulsing independent of
+data acquisition
 
-Output:
-    Create/Append to filename (default: combined_log.csv)
-    timestamp: min,max,avg CCD Temp  min,max,avg Laser Temp,
-               min,max,avg PM100 Reading, min,max,avg yellow thermistor,
-               min,max,avg blue thermistor, min,max,avg amps
-
-
-
-Example configuration:
-
-    Start the Thorlabs Optical power meter software
-    Set wavelength to 785, set high gain, no averaging
-
-    cd BoardTester
-    python setup.py develop
-    python scripts/TemperatureLogger.py
-
+see TemperatureLogger.py for details
 """
 
 import os
@@ -62,7 +45,7 @@ device = stroker_protocol.StrokerProtocolDevice(pid=0x0014)
 result = device.connect()
 serial = device.get_serial_number()
 
-laser_enable_wait = 10
+laser_enable_wait = 1
 log.info("Turn laser on, wait %s seconds", laser_enable_wait)
 device.set_laser_enable(1)
 time.sleep(laser_enable_wait)
@@ -86,7 +69,7 @@ y_therm = []
 b_therm = []
 e_amper = []
 
-def write_data():
+def write_data(laser_status=None):
 
     l_temp_grp  = [min(l_temps), max(l_temps), numpy.average(l_temps)]
     c_temp_grp  = [min(c_temps), max(c_temps), numpy.average(c_temps)]
@@ -132,11 +115,18 @@ def write_data():
             out_file.write("%s," % item)
         blu_str += "%2.2f," % item
 
-        # Electrical amperes group
+        # Electrical amperes group, or the laser status for easier
+        # processing csv
         amp_str = ""
-        for item in e_amper_grp:
-            out_file.write("%s," % item)
-        amp_str += "%2.2f," % item
+        if laser_status == None:
+            for item in e_amper_grp:
+                out_file.write("%s," % item)
+            amp_str += "%2.2f," % item
+        else:
+            out_file.write("%s," % laser_status)
+            item = laser_status
+            amp_str += "%s," % laser_status
+
 
 
         out_file.write("\n")
@@ -144,19 +134,6 @@ def write_data():
         log.info("%s %s %s %s %s %s",
                  ccd_str, las_str, pow_str,
                  yel_str, blu_str, amp_str)
-
-def get_data():
-    l_temps.append(device.get_laser_temperature())
-    c_temps.append(device.get_ccd_temperature())
-    l_power.append(pm100usb.read())
-
-    parts = (0, 0, 0)
-    if slapchop is not None:
-        parts = slapchop.read()
-
-    y_therm.append(parts[0])
-    b_therm.append(parts[1])
-    e_amper.append(parts[2])
 
 def zmq_get_data():
     """ Like get data above, but also spew out on a zmq publisher
@@ -214,6 +191,23 @@ stop_log = False
 
 start_time = time.time()
 
+# Turn laser on wait 200 ms
+# record data, wait 200 ms
+# turn laser off wait 600 ms
+
+# Every 200ms, do one of 5 actions
+actions = ["on", "record", "off", "off", "off"]
+action_sleep = 0.200
+action_count = 0
+action_time = time.time()
+
+
+# Every 500ms, do one of two actions
+actions = ["on", "off"]
+action_sleep = 0.500
+action_count = 0
+action_time = time.time()
+laser_status = "1"
 
 while not stop_log:
     # Sample every sleep interval, write at every period
@@ -222,8 +216,31 @@ while not stop_log:
 
     curr_time = abs(now_time - start_time)
 
+    last_action = abs(now_time - action_time)
+    if last_action >= action_sleep:
+        #log.info("Action: %s", actions[action_count])
+
+        if actions[action_count] == "on":
+            device.set_laser_enable(1)
+            laser_status = "1"
+        elif actions[action_count] == "off":
+            device.set_laser_enable(0)
+            laser_status = "0"
+        elif actions[action_count] == "record":
+            log.info("Record data")
+
+        action_count += 1
+
+        if action_count >= len(actions):
+            action_count = 0
+
+        action_time = now_time
+
+
+
+
     if curr_time >= period:
-        write_data()
+        write_data(laser_status=laser_status)
 
         l_temps = []
         c_temps = []
@@ -236,8 +253,7 @@ while not stop_log:
 
     else:
         log.debug("Get data")
-        #get_data()
         zmq_get_data()
 
 
-#device.set_laser_enable(0)
+    
