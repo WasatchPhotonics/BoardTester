@@ -123,8 +123,8 @@ def write_data(laser_status=None):
                 out_file.write("%s," % item)
             amp_str += "%2.2f," % item
         else:
-            out_file.write("%s," % laser_status)
-            item = laser_status
+            out_file.write("%s,%s,%s" % (laser_status, laser_status,
+                                         laser_status))
             amp_str += "%s," % laser_status
 
 
@@ -222,10 +222,10 @@ while not stop_log:
 
         if actions[action_count] == "on":
             device.set_laser_enable(1)
-            laser_status = "1"
+            laser_status = "1.0"
         elif actions[action_count] == "off":
             device.set_laser_enable(0)
-            laser_status = "0"
+            laser_status = "0.0"
         elif actions[action_count] == "record":
             log.info("Record data")
 
