@@ -66,3 +66,8 @@ BoardTester\TemperatureLogger.py
     Broadcasts events over the network to allow for non-interruption
     required changes in data collection and visualization procedures.
 
+scripts\dsh_checker.py
+
+    Power cycle the spectrometer, start the Dash version on the Desktop.
+    Change integration time, toggle cooling, and collection a
+    screenshot. Requires manually reprocessing to detect failure rates.
